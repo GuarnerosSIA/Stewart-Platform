@@ -198,36 +198,32 @@ void loop() {
     if (valueIndex == 6) {
       Serial.print("A");
 
-      M6Control = receivedValues[0]-255;
+      M6Control = receivedValues[5]-255;
       
       if (M6Control > 0)
       {
-        digitalWrite(M6A,HIGH);
-        digitalWrite(M6B,LOW);
+        digitalWrite(M6A,LOW);
+        digitalWrite(M6B,HIGH);
       }
       else if(M6Control < 0)
       {
-        digitalWrite(M6A,LOW);
-        digitalWrite(M6B,HIGH);
+        digitalWrite(M6A,HIGH);
+        digitalWrite(M6B,LOW);
       }
       else
       {
         digitalWrite(M6A,LOW);
         digitalWrite(M6B,LOW);
       }
-      
-      
-
-      
-      analogWrite(M6PWM,abs(M6Control));
-      
       M6Pos = analogRead(M6Pot);
       M6PosV = (M6Pos * 5.0) / 1023;
       M6PosR = (M6a*M6PosV*M6PosV) + M6b*M6PosV + M6c;
-      Serial.print(M6PosR);
-
+      
+      
+      Serial.print(M1PosR);
+      analogWrite(M1PWM,0);
       Serial.print(", ");
-      Serial.print(0);
+      Serial.print(M2PosR);
       analogWrite(M2PWM,0);
       Serial.print(", ");
       Serial.print(0);
@@ -239,8 +235,8 @@ void loop() {
       Serial.print(0);
       analogWrite(M5PWM,0);
       Serial.print(", ");
-      Serial.println(0);
-      analogWrite(M1PWM,0);
+      Serial.println(M6PosR);
+      analogWrite(M6PWM,abs(M6Control));
     }
   }
 }
