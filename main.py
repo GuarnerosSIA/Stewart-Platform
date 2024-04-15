@@ -12,12 +12,13 @@ time.sleep(3)
 
 vControlBound = np.vectorize(control_bounds)
 
-motor1 = DSTA(dt,6,4,0.99, 0.99,w1=0,w2=0)
-motor2 = DSTA(dt,6,5,0.9, 0.99,w1=0,w2=0)
-motor3 = DSTA(dt,6,5,0.9, 0.99,w1=0,w2=0)
+motor1 = DSTA(dt,10,0.2,0.99, 0.99,w1=0,w2=0)
+motor2 = DSTA(dt,10,0.2,0.99, 0.99,w1=0,w2=0)
+motor3 = DSTA(dt,10,0.2,0.99, 0.99,w1=0,w2=0)
 motor4 = DSTA(dt,6,5,0.9, 0.99,w1=0,w2=0)
 motor5 = DSTA(dt,6,5,0.9, 0.99,w1=0,w2=0)
 motor6 = DSTA(dt,6,5,0.9, 0.99,w1=0,w2=0)
+
 
 #Data adquisition
 measures = np.zeros((time_steps,6))
@@ -36,24 +37,15 @@ tic = time.time()
 
 for idx, idt in enumerate(tiempo):
 # Send integers to Arduino
-    integers_to_send = [int(control[0,0]),
-                        int(control[0,1]), 
-                        int(control[0,2]),
-                        int(control[0,3]),
-                        int(control[0,4]),
-                        int(control[0,5])]
+    integers_to_send = [int(control[0,i]) for i in range(6)]
     data_to_send = ','.join(map(str, integers_to_send)) + '\n'
-    print(data_to_send)
     ser.write(data_to_send.encode('utf-8'))
     A = ser.readline()
     actuators = A.decode('utf-8')
     if actuators[0]=='A':
         act_sep = actuators[1:].replace('\r\n','').split(',')
-        measurements = np.array([float(item) for item in act_sep])
-
-        measures[idx,:] = measurements
-        deltas = positions[idx,:] - measurements
-        
+        measures[idx,:] = np.array([float(item) for item in act_sep])
+        deltas = positions[idx,:] - measures[idx,:]
         error[idx,:] = deltas
         
         dotError[idx,0] = motor1.derivative(error[idx,0])
@@ -62,7 +54,7 @@ for idx, idt in enumerate(tiempo):
         dotError[idx,3] = motor4.derivative(error[idx,3])
         dotError[idx,4] = motor5.derivative(error[idx,4])
         dotError[idx,5] = motor6.derivative(error[idx,5])
-        
+
         controlProportional = np.multiply(error[idx,:],kp)
         controlDerivative = np.multiply(dotError[idx,:],kd)
         
@@ -71,10 +63,12 @@ for idx, idt in enumerate(tiempo):
         controlPD[idx,:] = controlProportional + controlDerivative
         
         # control = vControlBound(controlProportional + controlDerivative)
-        delta1 = np.array([[error[idx,0]],[dotError[idx,0]]])
-        control[0,0] = int(vControlBound(LQR(delta1))[0,0])
+        delta2 = np.reshape(np.concatenate((error[idx,:3],dotError[idx,:3])),(6,1))
+        print(delta2.shape)
+        aux = vControlBound(LQR(delta2)[:,0]+controlPD[idx,:3])
+        control[0,:3] = [int(aux[i]) for i in range(3)]
         controlPD[idx,0] = control[0,0]
-        # print(deltas)
+        print(data_to_send)
     time.sleep(0)     
 
 

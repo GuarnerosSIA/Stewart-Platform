@@ -1,7 +1,9 @@
 import numpy as np
 
 class STA:
-    
+    """
+    Class for the supertwisting algorithm in continuous time
+    """
     def __init__(self,tau,l1, l2, w1=0.0, w2=0.0):
         self.tau = tau
         self.w1 = [w1]
@@ -26,7 +28,9 @@ class STA:
         return out
     
 class DSTA(STA):
-    
+    """
+    Class for supertwisting in discrete time
+    """
     def __init__(self, tau, l1, l2, rho1, rho2, w1=0, w2=0):
         super().__init__(tau, l1, l2, w1, w2)
         self.rho1 = rho1
@@ -42,4 +46,12 @@ class DSTA(STA):
         return w2_aux
     
     
-    
+class LQR():
+    """
+    Class for implementing a PD contorller
+    """
+    def __init__(self,Q,R,B,A):
+        self.Q = Q
+        self.R = R
+        self.B = B
+        self.A = A

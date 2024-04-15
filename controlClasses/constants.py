@@ -25,11 +25,13 @@ control = np.zeros((1,6))+255
 
 ## PD control
 kp = np.array([
-    [-250,0,0,0,0,0]
+    [-500,0,0,0,0,0]
     ])
 
+nKp = np.reshape(kp,(6,1))
+
 kd = np.array(
-    [-100,0,0,0,0,0]
+    [-5,0,0,0,0,0]
 )
 
 ## LQR
@@ -40,8 +42,32 @@ QLQR = np.array([[500,0],[0,5]])
 RLQR = np.array([[0.01]])
 PLQR = np.array([[1, 0],[0,0.25]])
 
+ALQR2 = np.zeros((6,6))
+ALQR2[:3,3:] = np.eye(3)
+ALQR2[3:,:3] = -np.eye(3)*500
+ALQR2[3:,3:] = -np.eye(3)*5
 
-jLQR = controlD = np.zeros((time_steps,1))
+BLQR2 = np.zeros((6,3))
+BLQR2[3:,:] = np.eye(3)
+
+QLQR2 = np.zeros((6,6))
+QLQR2[:3,:3] = np.eye(3)*500
+QLQR2[3:,3:] = np.eye(3)*5
+
+RLQR2 = np.eye(3)*0.01
+
+print(np.diag(ALQR2[3:,:3]))
+
+PLQR2 = np.array([[96.4776,    0,  0, 0.8541,  0, 0],
+                  [0,    96.4776,  0, 0,   0.8541, 0],
+                  [0,    0,  96.4776, 0,  0, 0.8541],
+                  [0.8541,    0,  0, 0.033,  0, 0],
+                  [0,    0.8541,  0, 0,  0.033, 0],
+                  [0,    0,  0.8541, 0,  0, 0.033],])
+
+# PLQR2 = np.zeros((3,3))
+# PLQR2[0,0] = 96.4776
+
 
 # Storage
 
