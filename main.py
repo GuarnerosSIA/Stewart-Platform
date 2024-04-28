@@ -3,7 +3,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from controlClasses.algorithms import DSTA
+from controlClasses.algorithms import DSTA, LQR
 from controlClasses.constants import*
 from controlClasses.functions import*
 
@@ -12,12 +12,12 @@ time.sleep(3)
 
 vControlBound = np.vectorize(control_bounds)
 
-motor1 = DSTA(dt,10,0.2,0.99, 0.99,w1=0,w2=0)
-motor2 = DSTA(dt,10,0.2,0.99, 0.99,w1=0,w2=0)
-motor3 = DSTA(dt,10,0.2,0.99, 0.99,w1=0,w2=0)
-motor4 = DSTA(dt,6,5,0.9, 0.99,w1=0,w2=0)
-motor5 = DSTA(dt,6,5,0.9, 0.99,w1=0,w2=0)
-motor6 = DSTA(dt,6,5,0.9, 0.99,w1=0,w2=0)
+motor1 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
+motor2 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
+motor3 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
+motor4 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
+motor5 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
+motor6 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
 
 
 #Data adquisition
@@ -31,8 +31,13 @@ controlP = np.zeros((time_steps,6))
 controlD = np.zeros((time_steps,6))
 controlPD = np.zeros((time_steps,6))
 
+valueLQR = np.zeros((time_steps,1))
+
 tic = time.time()
 
+#Optimal control
+controlLQR = LQR(QLQR,RLQR,BLQR,ALQR,PLQR,0.001,0.0000001)
+controlLQR.gainsComputation()
 
 
 for idx, idt in enumerate(tiempo):
@@ -63,11 +68,12 @@ for idx, idt in enumerate(tiempo):
         controlPD[idx,:] = controlProportional + controlDerivative
         
         # control = vControlBound(controlProportional + controlDerivative)
-        delta2 = np.reshape(np.concatenate((error[idx,:3],dotError[idx,:3])),(6,1))
-        print(delta2.shape)
-        aux = vControlBound(LQR(delta2)[:,0]+controlPD[idx,:3])
-        control[0,:3] = [int(aux[i]) for i in range(3)]
+        delta = np.reshape(np.concatenate((error[idx,:6],dotError[idx,:6])),(12,1))
+        print(delta.shape)
+        aux = vControlBound(controlLQR.opControl(delta)[:,0]+controlPD[idx,:6])
+        control[0,:6] = [int(aux[i]) for i in range(6)]
         controlPD[idx,0] = control[0,0]
+        valueLQR[idx,0] = valueFunctionLQR(delta,control[:,:6].T)
         print(data_to_send)
     time.sleep(0)     
 
@@ -82,7 +88,9 @@ dataAquired = {
     'Reference 1':positions[:,0], 'Reference 2':positions[:,1], 'Reference 3':positions[:,2],
     'Reference 4':positions[:,3], 'Reference 5':positions[:,4], 'Reference 6':positions[:,5],
     'M1 STA':motor1.w1[1:],
-    'DM1 STA':motor1.w2[1:]
+    'DM1 STA':motor1.w2[1:],
+    'LQR Value function':valueLQR[:,0],
+    'LQR Integral value function':np.cumsum(valueLQR[:,0])
 }
 
 df = pd.DataFrame(dataAquired)
@@ -94,23 +102,23 @@ fig,ax = plt.subplots(2,2)
 fig.set_figheight(5)
 fig.set_figwidth(5)
 
-ax[0,0].plot(tiempo, measures[:,0], label = 'System 1')
-ax[0,0].plot(tiempo, positions[:,0], label = 'Reference 1')
+ax[0,0].plot(tiempo, measures[:,4], label = 'System 1')
+ax[0,0].plot(tiempo, positions[:,4], label = 'Reference 1')
 ax[0,0].legend()
 
 
-ax[0,1].plot(tiempo,error[:,0], label = 'Delta 1')
+ax[0,1].plot(tiempo,error[:,4], label = 'Delta 1')
 ax[0,1].plot(tiempo, motor1.w1[1:], label = 'DSTA1 w1')
 ax[0,1].legend()
 
 
-ax[1,0].plot(tiempo,dotError[:,0], label = 'DSTA1 w2')
+ax[1,0].plot(tiempo,dotError[:,4], label = 'DSTA1 w2')
 ax[1,0].legend()
 
 
-ax[1,1].plot(tiempo,controlPD[:,0], label = 'Control')
-ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
-ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
+ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
+# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
+# ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
 ax[1,1].legend()
 
 

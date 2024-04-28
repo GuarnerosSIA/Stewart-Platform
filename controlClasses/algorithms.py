@@ -50,8 +50,31 @@ class LQR():
     """
     Class for implementing a PD contorller
     """
-    def __init__(self,Q,R,B,A):
+    def __init__(self,Q,R,B,A,P0,dt,epsilon):
         self.Q = Q
         self.R = R
         self.B = B
         self.A = A
+        self.P = P0
+        self.epsilon = epsilon
+        self.dt = dt
+        self.K = [-np.linalg.inv(self.R)@self.B.T@self.P]
+
+    def gainsComputation(self):
+        delta = 1
+        while delta > self.epsilon:
+            pAnt =  self.P
+            pa = self.P@self.A
+            ap = self.A.T@self.P
+            pb = self.P@self.B
+            q = self.Q
+            rInv = np.linalg.inv(self.R)
+            bp = self.B.T@self.P
+            p = self.P
+            self.P = -1*self.dt*(-pa-ap-q + pb@rInv@bp)+p
+            delta = abs(np.linalg.norm(pAnt-self.P))
+            self.K.append(-np.linalg.inv(self.R)@self.B.T@self.P)
+
+    def opControl(self,delta):
+        return self.K[-1]@delta
+

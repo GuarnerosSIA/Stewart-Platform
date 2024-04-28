@@ -1,5 +1,5 @@
 import numpy as np
-from controlClasses.constants import ALQR,BLQR2,QLQR2,RLQR2,PLQR2
+from controlClasses.constants import ALQR,BLQR,QLQR,RLQR,PLQR
 # Serial communication
 def control_bounds(x):
     if x >= 255:
@@ -10,13 +10,10 @@ def control_bounds(x):
 
 # LQR control
 
-def LQR(delta):
-    # The signs is reverse due to the sign of the output ports
-    k = -np.linalg.inv(RLQR2)@BLQR2.T@PLQR2
-    return k@delta
+
 
 def valueFunctionLQR(system, control):
-    systemCost = system.T@QLQR2@system
-    controlCost = control.T@RLQR2@control
+    systemCost = system.T@QLQR@system
+    controlCost = control.T@RLQR@control
     return systemCost + controlCost
     

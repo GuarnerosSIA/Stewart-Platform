@@ -2,24 +2,24 @@ int receivedValues[6]; // Array to store the received integer values
 
 #define MIN_CONTROL_VALUE 25
 
-#define M1A 3
-#define M1B 2
+#define M1A 11
+#define M1B 10
 #define M1Pot A0
 
-#define M2A 5
-#define M2B 4
+#define M2A 9
+#define M2B 8
 #define M2Pot A1
 
-#define M3A 7
+#define M3A 7 
 #define M3B 6
 #define M3Pot A2
 
-#define M4A 9
-#define M4B 8
+#define M4A 5
+#define M4B 4
 #define M4Pot A3
 
-#define M5A 11
-#define M5B 10
+#define M5A 3
+#define M5B 2
 #define M5Pot A4
 
 #define M6A 45

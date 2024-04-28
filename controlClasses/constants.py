@@ -25,50 +25,53 @@ control = np.zeros((1,6))+255
 
 ## PD control
 kp = np.array([
-    [-500,0,0,0,0,0]
+    [-500,-500,-500,-500,-500,-500]
     ])
 
 nKp = np.reshape(kp,(6,1))
 
 kd = np.array(
-    [-5,0,0,0,0,0]
+    [-5,-5,-5,-5,-5,-5]
 )
 
-## LQR
+## LQR 6
+ALQR = np.zeros((12,12))
+ALQR[:6,6:] = np.eye(6)
+ALQR[6:,:6] = -np.eye(6)*500
+ALQR[6:,6:] = -np.eye(6)*5
 
-ALQR = np.array([[-4,0.03],[0.75,-10]])
-BLQR = np.array([[2],[0]])
-QLQR = np.array([[500,0],[0,5]])
-RLQR = np.array([[0.01]])
-PLQR = np.array([[1, 0],[0,0.25]])
+BLQR = np.zeros((12,6))
+BLQR[6:,:] = np.eye(6)
 
-ALQR2 = np.zeros((6,6))
-ALQR2[:3,3:] = np.eye(3)
-ALQR2[3:,:3] = -np.eye(3)*500
-ALQR2[3:,3:] = -np.eye(3)*5
+QLQR = np.zeros((12,12))
+QLQR[:6,:6] = np.eye(6)*500
+QLQR[6:,6:] = np.eye(6)*5
 
-BLQR2 = np.zeros((6,3))
-BLQR2[3:,:] = np.eye(3)
-
-QLQR2 = np.zeros((6,6))
-QLQR2[:3,:3] = np.eye(3)*500
-QLQR2[3:,3:] = np.eye(3)*5
-
-RLQR2 = np.eye(3)*0.01
-
-print(np.diag(ALQR2[3:,:3]))
-
-PLQR2 = np.array([[96.4776,    0,  0, 0.8541,  0, 0],
-                  [0,    96.4776,  0, 0,   0.8541, 0],
-                  [0,    0,  96.4776, 0,  0, 0.8541],
-                  [0.8541,    0,  0, 0.033,  0, 0],
-                  [0,    0.8541,  0, 0,  0.033, 0],
-                  [0,    0,  0.8541, 0,  0, 0.033],])
-
-# PLQR2 = np.zeros((3,3))
-# PLQR2[0,0] = 96.4776
+RLQR = np.eye(6)*0.01
 
 
+PLQR = np.zeros((12,12))
+
+# LQR 1
+ALQR1 = np.zeros((2,2))
+ALQR1[:1,1:] = np.eye(1)
+ALQR1[1:,:1] = -np.eye(1)*500
+ALQR1[1:,1:] = -np.eye(1)*5
+
+BLQR1 = np.zeros((2,1))
+BLQR1[1:,:] = np.eye(1)
+
+QLQR1 = np.zeros((1,1))
+QLQR1[:1,:1] = np.eye(1)*500
+QLQR1[1:,1:] = np.eye(1)*5
+
+RLQR1 = np.eye(1)*0.01
+
+
+PLQR1 = np.zeros((2,2))
+
+# print(PLQR)
+# print(PLQR2)
 # Storage
 
 FILECSVPD = 'data\platformPD.csv'
