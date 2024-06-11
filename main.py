@@ -1,3 +1,6 @@
+# import packages for communicating with the arduino, control the platform and 
+# self made classes
+
 import serial
 import time
 import numpy as np
@@ -7,10 +10,16 @@ from controlClasses.algorithms import DSTA, LQR
 from controlClasses.constants import*
 from controlClasses.functions import*
 
+# Start the serial port 
+
 ser = serial.Serial('COM10', 250000)
 time.sleep(3)
 
+# create a scalar function into a function for vectors
 vControlBound = np.vectorize(control_bounds)
+
+# A class for the Discrete Super Stwisting Algorithm is 
+# created for each of the motors used
 
 motor1 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
 motor2 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
@@ -19,8 +28,8 @@ motor4 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
 motor5 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
 motor6 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
 
+# Create arrays to store the information computed and obtained
 
-#Data adquisition
 measures = np.zeros((time_steps,6))
 dotMeasures = np.zeros((time_steps,6))
 
@@ -33,74 +42,93 @@ controlPD = np.zeros((time_steps,6))
 
 valueLQR = np.zeros((time_steps,1))
 
+# Measure of the time
 tic = time.time()
 
-#Optimal control
+# A class for the LQR is created in order to apply Linear Optimal Control
 controlLQR = LQR(QLQR,RLQR,BLQR,ALQR,PLQR,0.001,0.0000001)
+#The Ricatti equation solution is computed
 controlLQR.gainsComputation()
 
-
 for idx, idt in enumerate(tiempo):
-# Send integers to Arduino
+    # Send control value and received actuators poition
     integers_to_send = [int(control[0,i]) for i in range(6)]
     data_to_send = ','.join(map(str, integers_to_send)) + '\n'
     ser.write(data_to_send.encode('utf-8'))
     A = ser.readline()
     actuators = A.decode('utf-8')
+    # Evaluate if the received information was correct
     if actuators[0]=='A':
+        # Separate the information obtained 
         act_sep = actuators[1:].replace('\r\n','').split(',')
         measures[idx,:] = np.array([float(item) for item in act_sep])
+        # Compute the trajectory tracking error
         deltas = positions[idx,:] - measures[idx,:]
         error[idx,:] = deltas
-        
+        # Compute the error derivative with the STA
         dotError[idx,0] = motor1.derivative(error[idx,0])
         dotError[idx,1] = motor2.derivative(error[idx,1])
         dotError[idx,2] = motor3.derivative(error[idx,2])
         dotError[idx,3] = motor4.derivative(error[idx,3])
         dotError[idx,4] = motor5.derivative(error[idx,4])
         dotError[idx,5] = motor6.derivative(error[idx,5])
-
+        # Calculate the proportional and derivative control for the PD
         controlProportional = np.multiply(error[idx,:],kp)
         controlDerivative = np.multiply(dotError[idx,:],kd)
-        
+               
         controlP[idx,:] = controlProportional
         controlD[idx,:] = controlDerivative
         controlPD[idx,:] = controlProportional + controlDerivative
         
+        # storage the control in a variable in order to send it to the arduino
+
         # control = vControlBound(controlProportional + controlDerivative)
+        
+        # reshape the delta error to use it in the computation
         delta = np.reshape(np.concatenate((error[idx,:6],dotError[idx,:6])),(12,1))
         print(delta.shape)
         aux = vControlBound(controlLQR.opControl(delta)[:,0]+controlPD[idx,:6])
         control[0,:6] = [int(aux[i]) for i in range(6)]
         controlPD[idx,0] = control[0,0]
         valueLQR[idx,0] = valueFunctionLQR(delta,control[:,:6].T)
-
-        
-
+        # See the information send
         print(data_to_send)
-    time.sleep(0)     
+    
 
 
-# Close the serial connection
+# Obtain the time employed to run the algorithm
 toc = time.time() - tic
 print(toc)
 
+# Create a dictionary for storing the information
 dataAquired = {
     'System 1':measures[:,0], 'System 2':measures[:,1], 'System 3':measures[:,2],
     'System 4':measures[:,3], 'System 5':measures[:,4], 'System 6':measures[:,5],
     'Reference 1':positions[:,0], 'Reference 2':positions[:,1], 'Reference 3':positions[:,2],
     'Reference 4':positions[:,3], 'Reference 5':positions[:,4], 'Reference 6':positions[:,5],
+    
     'M1 STA':motor1.w1[1:],
     'DM1 STA':motor1.w2[1:],
+    'M2 STA':motor2.w1[1:],
+    'DM2 STA':motor2.w2[1:],
+    'M3 STA':motor3.w1[1:],
+    'DM3 STA':motor3.w2[1:],
+    'M4 STA':motor4.w1[1:],
+    'DM4 STA':motor4.w2[1:],
+    'M5 STA':motor5.w1[1:],
+    'DM5 STA':motor5.w2[1:],
+    'M6 STA':motor6.w1[1:],
+    'DM6 STA':motor6.w2[1:],
+
     'LQR Value function':valueLQR[:,0],
     'LQR Integral value function':np.cumsum(valueLQR[:,0])
 }
 
+# Create a .csv file that containsthe information computed
 df = pd.DataFrame(dataAquired)
 df.to_csv(FILECSVPD)
 
 # Show Figures
-
 fig,ax = plt.subplots(2,2)
 
 fig.set_figheight(5)
@@ -128,186 +156,5 @@ ax[1,1].legend()
 
 plt.show() 
 
-
-
-
-
-fig,ax = plt.subplots(2,2)
-
-fig.set_figheight(5)
-fig.set_figwidth(5)
-
-ax[0,0].plot(tiempo, measures[:,1], label = 'System 1')
-ax[0,0].plot(tiempo, positions[:,1], label = 'Reference 1')
-ax[0,0].legend()
-
-
-ax[0,1].plot(tiempo,error[:,1], label = 'Delta 1')
-ax[0,1].plot(tiempo, motor2.w1[1:], label = 'DSTA1 w1')
-ax[0,1].legend()
-
-
-ax[1,0].plot(tiempo,dotError[:,1], label = 'DSTA1 w2')
-ax[1,0].legend()
-
-
-ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
-# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
-# ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
-ax[1,1].legend()
-
-
-plt.show() 
-
-
-
-
-fig,ax = plt.subplots(2,2)
-
-fig.set_figheight(5)
-fig.set_figwidth(5)
-
-ax[0,0].plot(tiempo, measures[:,2], label = 'System 1')
-ax[0,0].plot(tiempo, positions[:,2], label = 'Reference 1')
-ax[0,0].legend()
-
-
-ax[0,1].plot(tiempo,error[:,2], label = 'Delta 1')
-ax[0,1].plot(tiempo, motor3.w1[1:], label = 'DSTA1 w1')
-ax[0,1].legend()
-
-
-ax[1,0].plot(tiempo,dotError[:,2], label = 'DSTA1 w2')
-ax[1,0].legend()
-
-
-ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
-# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
-# ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
-ax[1,1].legend()
-
-
-plt.show() 
-
-
-
-
-
-fig,ax = plt.subplots(2,2)
-
-fig.set_figheight(5)
-fig.set_figwidth(5)
-
-ax[0,0].plot(tiempo, measures[:,3], label = 'System 1')
-ax[0,0].plot(tiempo, positions[:,3], label = 'Reference 1')
-ax[0,0].legend()
-
-
-ax[0,1].plot(tiempo,error[:,3], label = 'Delta 1')
-ax[0,1].plot(tiempo, motor4.w1[1:], label = 'DSTA1 w1')
-ax[0,1].legend()
-
-
-ax[1,0].plot(tiempo,dotError[:,3], label = 'DSTA1 w2')
-ax[1,0].legend()
-
-
-ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
-# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
-# ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
-ax[1,1].legend()
-
-
-plt.show() 
-
-
-
-
-fig,ax = plt.subplots(2,2)
-
-fig.set_figheight(5)
-fig.set_figwidth(5)
-
-ax[0,0].plot(tiempo, measures[:,4], label = 'System 1')
-ax[0,0].plot(tiempo, positions[:,4], label = 'Reference 1')
-ax[0,0].legend()
-
-
-ax[0,1].plot(tiempo,error[:,4], label = 'Delta 1')
-ax[0,1].plot(tiempo, motor5.w1[1:], label = 'DSTA1 w1')
-ax[0,1].legend()
-
-
-ax[1,0].plot(tiempo,dotError[:,4], label = 'DSTA1 w2')
-ax[1,0].legend()
-
-
-ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
-# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
-# ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
-ax[1,1].legend()
-
-
-plt.show() 
-
-
-
-
-
-fig,ax = plt.subplots(2,2)
-
-fig.set_figheight(5)
-fig.set_figwidth(5)
-
-ax[0,0].plot(tiempo, measures[:,5], label = 'System 1')
-ax[0,0].plot(tiempo, positions[:,5], label = 'Reference 1')
-ax[0,0].legend()
-
-
-ax[0,1].plot(tiempo,error[:,5], label = 'Delta 1')
-ax[0,1].plot(tiempo, motor6.w1[1:], label = 'DSTA1 w1')
-ax[0,1].legend()
-
-
-ax[1,0].plot(tiempo,dotError[:,5], label = 'DSTA1 w2')
-ax[1,0].legend()
-
-
-ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
-# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
-# ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
-ax[1,1].legend()
-
-
-plt.show() 
-
-
-# fig,ax = plt.subplots(2,3)
-
-# fig.set_figheight(5)
-# fig.set_figwidth(5)
-
-# ax[0,0].plot(tiempo, measures[:,0])
-# ax[0,0].plot(tiempo, positions[:,0])
-# ax[0,0].plot(tiempo, dotError[:,0])
-
-# ax[0,1].plot(tiempo, measures[:,1])
-# ax[0,1].plot(tiempo, positions[:,1])
-
-# ax[0,2].plot(tiempo, measures[:,2])
-# ax[0,2].plot(tiempo, positions[:,2])
-
-# ax[1,0].plot(tiempo, measures[:,3])
-# ax[1,0].plot(tiempo, positions[:,3])
-
-# ax[1,1].plot(tiempo, measures[:,4])
-# ax[1,1].plot(tiempo, positions[:,4])
-
-# ax[1,2].plot(tiempo, measures[:,5])
-# ax[1,2].plot(tiempo, positions[:,5])
-
-# plt.show() 
-# # storing the information in a CSV file
-
-
+# Close the serial connection
 ser.close()
