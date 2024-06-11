@@ -78,3 +78,81 @@ class LQR():
     def opControl(self,delta):
         return self.K[-1]@delta
 
+class ValueDNN():
+    """
+    Esta clase permite generar una red neuronal que aproxime la función Valor de una red 
+    """
+    def __init__(self,Q,R,B,A,P0,alpha,beta,dt,w0,c):
+        """
+        Valores iniciales de la ecuación diferencial de Riccati
+        """
+        self.Q = Q
+        self.R = R
+        self.B = B
+        self.A = A
+        self.gamma = 0.5*((alpha**2)+(beta**2))
+        self.phi1 = self.gamma*np.eye(1) + R
+        self.phi2 = 0.5*self.gamma*np.eye(2) + Q
+        self.phi3 = 0.5*np.eye(2) -  0.25*B@np.linalg.inv(self.phi1)@B.T
+        self.P = [P0]
+        self.dt = dt
+        self.w0 = w0
+        self.nNeurons = w0.shape[0]
+        self.c = c
+
+    def pUpdate(self):
+        p = self.P[-1]
+        pa = p@self.A
+        ap = self.A.T@p
+        pPhip = 4*p@self.phi3@p
+
+        self.P.append(1*self.dt*(-pa-ap-pPhip-self.phi2)+p)
+
+    def valueFunction(self, x):
+        value = 0
+        for i in range(self.nNeurons):
+            sW = self.w0[i]**2
+            sSig = self.sigmoid(self.c.T[i], x)**2
+            value += sW*sSig
+        Pdelta = x.T@self.P[-1]@x
+        return value + Pdelta
+    
+    def nablaV(self,delta):
+        value = 0
+        for i in range(self.nNeurons):
+            sW = self.w0[i]**2
+            sDSig = self.dsigmoid(self.c.T[i],delta)
+            sSig = self.sigmoid(self.c.T[i],delta)
+            value += sW*sSig*sDSig*self.c.T[i]
+        
+        aux = 2*self.P[-1]@delta
+        value = value.reshape((2,1))
+        
+        return value + aux
+    
+    def wUpdate(self,delta):
+        suma = 0
+        sW = self.w0**2
+        w0 = self.w0
+        for i in range(self.nNeurons):
+            sDSig = self.dsigmoid(self.c.T[i],delta)
+            sSig = self.sigmoid(self.c.T[i],delta)
+            suma += sW[i]*sSig*sDSig*self.c.T[i]
+        suma = suma.reshape((-1,1))
+        common = self.A@delta-self.phi3@(suma+4*self.P[-1]@delta)
+
+        for i in range(self.nNeurons):
+            sDSig = self.dsigmoid(self.c.T[i],delta)
+            sSig = self.sigmoid(self.c.T[i],delta)
+            frac = w0[i]*sSig*sDSig*self.c.T[i]/(2*(sSig**2))
+            frac = frac.reshape((1,-1))
+            self.w0[i] = -frac@common*self.dt + self.w0[i]
+        
+    
+    def sigmoid(self, c, x):
+        return 1/(1+np.exp(c.T@x))
+    
+    def dsigmoid(self, c, x):
+        return self.sigmoid(c,x)*(1-self.sigmoid(c,x))
+        
+

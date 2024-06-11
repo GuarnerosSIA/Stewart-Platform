@@ -74,6 +74,9 @@ for idx, idt in enumerate(tiempo):
         control[0,:6] = [int(aux[i]) for i in range(6)]
         controlPD[idx,0] = control[0,0]
         valueLQR[idx,0] = valueFunctionLQR(delta,control[:,:6].T)
+
+        
+
         print(data_to_send)
     time.sleep(0)     
 
@@ -97,6 +100,129 @@ df = pd.DataFrame(dataAquired)
 df.to_csv(FILECSVPD)
 
 # Show Figures
+
+fig,ax = plt.subplots(2,2)
+
+fig.set_figheight(5)
+fig.set_figwidth(5)
+
+ax[0,0].plot(tiempo, measures[:,0], label = 'System 1')
+ax[0,0].plot(tiempo, positions[:,0], label = 'Reference 1')
+ax[0,0].legend()
+
+
+ax[0,1].plot(tiempo,error[:,0], label = 'Delta 1')
+ax[0,1].plot(tiempo, motor1.w1[1:], label = 'DSTA1 w1')
+ax[0,1].legend()
+
+
+ax[1,0].plot(tiempo,dotError[:,0], label = 'DSTA1 w2')
+ax[1,0].legend()
+
+
+ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
+# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
+# ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
+ax[1,1].legend()
+
+
+plt.show() 
+
+
+
+
+
+fig,ax = plt.subplots(2,2)
+
+fig.set_figheight(5)
+fig.set_figwidth(5)
+
+ax[0,0].plot(tiempo, measures[:,1], label = 'System 1')
+ax[0,0].plot(tiempo, positions[:,1], label = 'Reference 1')
+ax[0,0].legend()
+
+
+ax[0,1].plot(tiempo,error[:,1], label = 'Delta 1')
+ax[0,1].plot(tiempo, motor2.w1[1:], label = 'DSTA1 w1')
+ax[0,1].legend()
+
+
+ax[1,0].plot(tiempo,dotError[:,1], label = 'DSTA1 w2')
+ax[1,0].legend()
+
+
+ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
+# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
+# ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
+ax[1,1].legend()
+
+
+plt.show() 
+
+
+
+
+fig,ax = plt.subplots(2,2)
+
+fig.set_figheight(5)
+fig.set_figwidth(5)
+
+ax[0,0].plot(tiempo, measures[:,2], label = 'System 1')
+ax[0,0].plot(tiempo, positions[:,2], label = 'Reference 1')
+ax[0,0].legend()
+
+
+ax[0,1].plot(tiempo,error[:,2], label = 'Delta 1')
+ax[0,1].plot(tiempo, motor3.w1[1:], label = 'DSTA1 w1')
+ax[0,1].legend()
+
+
+ax[1,0].plot(tiempo,dotError[:,2], label = 'DSTA1 w2')
+ax[1,0].legend()
+
+
+ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
+# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
+# ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
+ax[1,1].legend()
+
+
+plt.show() 
+
+
+
+
+
+fig,ax = plt.subplots(2,2)
+
+fig.set_figheight(5)
+fig.set_figwidth(5)
+
+ax[0,0].plot(tiempo, measures[:,3], label = 'System 1')
+ax[0,0].plot(tiempo, positions[:,3], label = 'Reference 1')
+ax[0,0].legend()
+
+
+ax[0,1].plot(tiempo,error[:,3], label = 'Delta 1')
+ax[0,1].plot(tiempo, motor4.w1[1:], label = 'DSTA1 w1')
+ax[0,1].legend()
+
+
+ax[1,0].plot(tiempo,dotError[:,3], label = 'DSTA1 w2')
+ax[1,0].legend()
+
+
+ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
+# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
+# ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
+ax[1,1].legend()
+
+
+plt.show() 
+
+
+
+
 fig,ax = plt.subplots(2,2)
 
 fig.set_figheight(5)
@@ -108,11 +234,42 @@ ax[0,0].legend()
 
 
 ax[0,1].plot(tiempo,error[:,4], label = 'Delta 1')
-ax[0,1].plot(tiempo, motor1.w1[1:], label = 'DSTA1 w1')
+ax[0,1].plot(tiempo, motor5.w1[1:], label = 'DSTA1 w1')
 ax[0,1].legend()
 
 
 ax[1,0].plot(tiempo,dotError[:,4], label = 'DSTA1 w2')
+ax[1,0].legend()
+
+
+ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
+# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
+# ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
+ax[1,1].legend()
+
+
+plt.show() 
+
+
+
+
+
+fig,ax = plt.subplots(2,2)
+
+fig.set_figheight(5)
+fig.set_figwidth(5)
+
+ax[0,0].plot(tiempo, measures[:,5], label = 'System 1')
+ax[0,0].plot(tiempo, positions[:,5], label = 'Reference 1')
+ax[0,0].legend()
+
+
+ax[0,1].plot(tiempo,error[:,5], label = 'Delta 1')
+ax[0,1].plot(tiempo, motor6.w1[1:], label = 'DSTA1 w1')
+ax[0,1].legend()
+
+
+ax[1,0].plot(tiempo,dotError[:,5], label = 'DSTA1 w2')
 ax[1,0].legend()
 
 
