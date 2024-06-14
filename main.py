@@ -55,8 +55,8 @@ for idx, idt in enumerate(tiempo):
     integers_to_send = [int(control[0,i]) for i in range(6)]
     data_to_send = ','.join(map(str, integers_to_send)) + '\n'
     ser.write(data_to_send.encode('utf-8'))
-    A = ser.readline()
-    actuators = A.decode('utf-8')
+    data_received = ser.readline()
+    actuators = data_received.decode('utf-8')
     # Evaluate if the received information was correct
     if actuators[0]=='A':
         # Separate the information obtained 
