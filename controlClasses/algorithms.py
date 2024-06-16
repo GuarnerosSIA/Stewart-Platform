@@ -1,5 +1,20 @@
 import numpy as np
 
+def DoPri45Step(f,t,x,h):
+    
+    k1 = f(t,x)
+    k2 = f(t + 1./5*h, x + h*(1./5*k1) )
+    k3 = f(t + 3./10*h, x + h*(3./40*k1 + 9./40*k2) )
+    k4 = f(t + 4./5*h, x + h*(44./45*k1 - 56./15*k2 + 32./9*k3) )
+    k5 = f(t + 8./9*h, x + h*(19372./6561*k1 - 25360./2187*k2 + 64448./6561*k3 - 212./729*k4) )
+    k6 = f(t + h, x + h*(9017./3168*k1 - 355./33*k2 + 46732./5247*k3 + 49./176*k4 - 5103./18656*k5) )
+
+    v5 = 35./384*k1 + 500./1113*k3 + 125./192*k4 - 2187./6784*k5 + 11./84*k6
+    k7 = f(t + h, x + h*v5)
+    v4 = 5179./57600*k1 + 7571./16695*k3 + 393./640*k4 - 92097./339200*k5 + 187./2100*k6 + 1./40*k7
+    
+    return v4,v5
+
 class STA:
     """
     Class for the supertwisting algorithm in continuous time
@@ -62,21 +77,30 @@ class LQR():
 
     def gainsComputation(self):
         delta = 1
+        pAnt =  self.P
+        t = 0
+        h = self.dt
         while delta > self.epsilon:
-            pAnt =  self.P
-            pa = self.P@self.A
-            ap = self.A.T@self.P
-            pb = self.P@self.B
-            q = self.Q
-            rInv = np.linalg.inv(self.R)
-            bp = self.B.T@self.P
-            p = self.P
-            self.P = -1*self.dt*(-pa-ap-q + pb@rInv@bp)+p
-            delta = abs(np.linalg.norm(pAnt-self.P))
-            self.K.append(-np.linalg.inv(self.R)@self.B.T@self.P)
+            v4, v5 = DoPri45Step(self.rDE,t,pAnt,h)
+            newP = pAnt + h*v5
+            delta = abs(np.linalg.norm(pAnt-newP))
+            pAnt = newP
+            self.K.append(-np.linalg.inv(self.R)@self.B.T@pAnt)
+            t += h
+        self.P = newP
 
     def opControl(self,delta):
         return self.K[-1]@delta
+    
+    def rDE(self,t,p):
+        pa = p@self.A
+        ap = self.A.T@p
+        pb = p@self.B
+        q = self.Q
+        rInv = np.linalg.inv(self.R)
+        bp = self.B.T@p
+        return -1*(-pa-ap-q + pb@rInv@bp)
+            
 
 class ValueDNN():
     """

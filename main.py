@@ -46,9 +46,11 @@ valueLQR = np.zeros((time_steps,1))
 tic = time.time()
 
 # A class for the LQR is created in order to apply Linear Optimal Control
-controlLQR = LQR(QLQR,RLQR,BLQR,ALQR,PLQR,0.001,0.0000001)
+controlLQR = LQR(QLQR,RLQR,BLQR,ALQR,PLQR,0.01,0.0000001)
+print(PLQR)
 #The Ricatti equation solution is computed
 controlLQR.gainsComputation()
+print(controlLQR.P)
 
 for idx, idt in enumerate(tiempo):
     # Send control value and received actuators poition
@@ -86,7 +88,7 @@ for idx, idt in enumerate(tiempo):
         
         # reshape the delta error to use it in the computation
         delta = np.reshape(np.concatenate((error[idx,:6],dotError[idx,:6])),(12,1))
-        print(delta.shape)
+        # print(delta.shape)
         aux = vControlBound(controlLQR.opControl(delta)[:,0]+controlPD[idx,:6])
         control[0,:6] = [int(aux[i]) for i in range(6)]
         controlPD[idx,0] = control[0,0]
