@@ -120,17 +120,23 @@ class ValueDNN():
         self.phi3 = 0.5*np.eye(2) -  0.25*B@np.linalg.inv(self.phi1)@B.T
         self.P = [P0]
         self.dt = dt
+        self.t = 0
         self.w0 = w0
         self.nNeurons = w0.shape[0]
         self.c = c
 
     def pUpdate(self):
         p = self.P[-1]
+        v4, v5 = DoPri45Step(self.pEquation,self.t,p,self.dt)
+        newP = p + self.dt*v5
+        self.P.append(newP)
+
+    def pEquation(self,t,x):
+        p = x
         pa = p@self.A
         ap = self.A.T@p
         pPhip = 4*p@self.phi3@p
-
-        self.P.append(1*self.dt*(-pa-ap-pPhip-self.phi2)+p)
+        return 1*(-pa-ap-pPhip-self.phi2)
 
     def valueFunction(self, x):
         value = 0
