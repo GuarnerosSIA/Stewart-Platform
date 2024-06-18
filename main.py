@@ -6,7 +6,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from controlClasses.algorithms import DSTA, LQR
+from controlClasses.algorithms import DSTA, LQR, ValueDNN
 from controlClasses.constants import*
 from controlClasses.functions import*
 
@@ -47,6 +47,7 @@ tic = time.time()
 
 # A class for the LQR is created in order to apply Linear Optimal Control
 controlLQR = LQR(QLQR,RLQR,BLQR,ALQR,PLQR,0.01,0.0000001)
+# controlDNN = ValueDNN(QLQR,RLQR,BLQR,ALQR,PLQR,alpha,beta,dt,w0,c)
 print(PLQR)
 #The Ricatti equation solution is computed
 controlLQR.gainsComputation()
@@ -55,10 +56,8 @@ print(controlLQR.P)
 for idx, idt in enumerate(tiempo):
     # Send control value and received actuators poition
     integers_to_send = [int(control[0,i]) for i in range(6)]
-    data_to_send = ','.join(map(str, integers_to_send)) + '\n'
-    ser.write(data_to_send.encode('utf-8'))
-    data_received = ser.readline()
-    actuators = data_received.decode('utf-8')
+    
+    actuators = sendReceive(integers_to_send,ser)
     # Evaluate if the received information was correct
     if actuators[0]=='A':
         # Separate the information obtained 
@@ -88,13 +87,12 @@ for idx, idt in enumerate(tiempo):
         
         # reshape the delta error to use it in the computation
         delta = np.reshape(np.concatenate((error[idx,:6],dotError[idx,:6])),(12,1))
-        # print(delta.shape)
         aux = vControlBound(controlLQR.opControl(delta)[:,0]+controlPD[idx,:6])
         control[0,:6] = [int(aux[i]) for i in range(6)]
         controlPD[idx,0] = control[0,0]
         valueLQR[idx,0] = valueFunctionLQR(delta,control[:,:6].T)
         # See the information send
-        print(data_to_send)
+        print(actuators)
     
 
 

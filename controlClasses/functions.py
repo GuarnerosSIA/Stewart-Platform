@@ -1,5 +1,7 @@
 import numpy as np
 from controlClasses.constants import ALQR,BLQR,QLQR,RLQR,PLQR
+import serial
+
 # Serial communication
 def control_bounds(x):
     if x >= 255:
@@ -32,3 +34,10 @@ def DoPri45Step(f,t,x,h):
     v4 = 5179./57600*k1 + 7571./16695*k3 + 393./640*k4 - 92097./339200*k5 + 187./2100*k6 + 1./40*k7
     
     return v4,v5
+
+
+def sendReceive(integers2Send, serialObject):
+    data_to_send = ','.join(map(str, integers2Send)) + '\n'
+    serialObject.write(data_to_send.encode('utf-8'))
+    data_received = serialObject.readline()
+    return data_received.decode('utf-8')

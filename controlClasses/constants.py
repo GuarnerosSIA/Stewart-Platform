@@ -70,6 +70,16 @@ RLQR1 = np.eye(1)*0.01
 
 PLQR1 = np.zeros((2,2))
 
+# Differential Neural Network
+nStates = 2
+nInputs = 1
+nNeuronsV = 5
+
+alpha = 0.5
+beta =  0.5
+
+w0 = np.random.random((nNeuronsV,1))*10
+c = np.random.random((nNeuronsV,nStates)).T*0.01
 # print(PLQR)
 # print(PLQR2)
 # Storage
