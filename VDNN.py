@@ -44,10 +44,10 @@ w0 = np.random.random((nNeuronsV,1))*10
 c = np.random.random((nNeuronsV,nStates)).T*0.01
 
 dnnV = ValueDNN(QDNN,RDNN,BDNN,ADNN,P0,alpha,beta,dt,w0,c)
-delta = np.random.random((2,1))
+delta = np.random.random((2,1))*10
 weights = [dnnV.w0[0][0]]
 
-steps = 10000
+steps = 50000
     
 p11 = []
 p21 = []
@@ -62,33 +62,29 @@ print(dnnV.phi3)
 
 for i in range(steps-1):
     dnnV.pUpdate()
-    # print(i)
     P = dnnV.P[-1]
     Pdot = dnnV.pEquation(0,P)
-    p11.append(Pdot[0][0])
-    p21.append(Pdot[1][0])
-    p12.append(Pdot[0][1])
-    p22.append(Pdot[1][1])
-    # P0 = newP
-
-    # dnnV.pUpdate()
-    # print(dnnV.valueFunction(delta))
-    # dnnV.wUpdate(delta)
-    # delta = delta*0.95
-    # weights.append(dnnV.w0[0][0])
+    dnnV.wUpdate(delta)
+    delta=delta*0.99
+    p11.append(P[0][0])
+    p21.append(P[1][0])
+    p12.append(P[0][1])
+    p22.append(P[1][1])
+    weights.append(dnnV.w0[0][0])
     
-# print(dnnV.w0[0][0])
+print(P)
 
 # p11 = [x[0,0] for x in dnnV.P]
 # p21 = [x[1,0] for x in dnnV.P]
 # p12 = [x[0,1] for x in dnnV.P]
 # p22 = [x[1,1] for x in dnnV.P]
 
-plt.plot(p11)
-plt.plot(p21)
-plt.plot(p12)
-plt.plot(p22)
+# plt.plot(p11)
+# plt.plot(p21)
+# plt.plot(p12)
+# plt.plot(p22)
 
+plt.plot(weights)
 
 plt.show()
 

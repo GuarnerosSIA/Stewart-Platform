@@ -162,14 +162,14 @@ class ValueDNN():
     
     def wUpdate(self,delta):
         suma = 0
-        sW = self.w0**2
+        sW = np.square(self.w0)
         w0 = self.w0
         for i in range(self.nNeurons):
             sDSig = self.dsigmoid(self.c.T[i],delta)
             sSig = self.sigmoid(self.c.T[i],delta)
             suma += sW[i]*sSig*sDSig*self.c.T[i]
         suma = suma.reshape((-1,1))
-        common = self.A@delta-self.phi3@(suma+4*self.P[-1]@delta)
+        common = self.A@delta+self.phi3@(suma+4*self.P[-1]@delta)
 
         for i in range(self.nNeurons):
             sDSig = self.dsigmoid(self.c.T[i],delta)
