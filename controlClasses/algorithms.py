@@ -101,7 +101,7 @@ class LQR():
         controlPD = controlProportional + controlDerivative
         delta = np.reshape(np.concatenate((error,errorDerivative)),(12,1))
         ocElement = self.K[-1]@delta
-        return controlPD, ocElement, delta
+        return controlPD.T, ocElement, delta
 
     def rDE(self,t,p):
         pa = p@self.A
@@ -170,15 +170,20 @@ class ValueDNN():
             value += sW*sSig*sDSig*self.c.T[i]
         
         aux = 2*self.P[-1]@delta
-        value = value.reshape((2,1))
+        value = value.reshape((self.nStates,1))
         
         return value + aux
     
-    def control(self,delta):
+    def control(self,error, errorDerivative):
 
-        nabla = self.nabla(delta)
+        delta = np.reshape(np.concatenate((error,errorDerivative)),(12,1))
+        nabla = self.nablaV(delta)
+        control = -1*0.5*self.invPhi@self.B.T@nabla
         
-        return 0.5*self.invPhi@self.B.T@nabla
+        self.wUpdate(delta)
+        self.pUpdate()
+        
+        return control,delta
     
     def wUpdate(self,delta):
         suma = 0

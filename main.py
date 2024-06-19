@@ -36,9 +36,7 @@ dotMeasures = np.zeros((time_steps,6))
 error = np.zeros((time_steps,6))
 dotError = np.zeros((time_steps,6))
 
-controlP = np.zeros((time_steps,6))
-controlD = np.zeros((time_steps,6))
-controlPD = np.zeros((time_steps,6))
+controlKillMe = np.zeros((time_steps,6))
 
 valueLQR = np.zeros((time_steps,1))
 
@@ -47,7 +45,7 @@ tic = time.time()
 
 # A class for the LQR is created in order to apply Linear Optimal Control
 controlLQR = LQR(QLQR,RLQR,BLQR,ALQR,PLQR,0.01,0.0000001)
-# controlDNN = ValueDNN(QLQR,RLQR,BLQR,ALQR,PLQR,alpha,beta,dt,w0,c)
+controlDNN = ValueDNN(QLQR3,RLQR3,BLQR3,ALQR3,PLQR3,alpha,beta,dt,w0,c)
 print(PLQR)
 #The Ricatti equation solution is computed
 controlLQR.gainsComputation()
@@ -75,12 +73,17 @@ for idx, idt in enumerate(tiempo):
         dotError[idx,5] = motor6.derivative(error[idx,5])
         # Calculate the proportional and derivative control for the PD
         
-        pdc,oc,delta = controlLQR.ocwPD(error[idx,:],dotError[idx,:],kp,kd)
-        control = vControlBound((pdc+oc)[:,0])
+        # pdc,oc,delta = controlLQR.ocwPD(error[idx,:],dotError[idx,:],kp,kd)
+        # control = vControlBound((pdc+oc)[:,0])
+        # controlKillMe[idx] = (pdc+oc)[:,0]
+        
+        optimalControl, delta = controlDNN.control(error[idx,:],dotError[idx,:])
+        control = vControlBound((optimalControl)[:,0])
+        controlKillMe[idx] = (optimalControl)[:,0]
 
         valueLQR[idx,0] = valueFunctionLQR(delta,control)
 
-        # controlPD[idx,0] = control[0]
+        
         
         # See the information send
         # print(control)
@@ -140,8 +143,8 @@ ax[1,0].plot(tiempo,dotError[:,0], label = 'DSTA1 w2')
 ax[1,0].legend()
 
 
-ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
-# ax[1,1].plot(tiempo,controlP[:,0], label = 'Proportional')
+# ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
+ax[1,1].plot(tiempo,controlKillMe[:,0], label = 'Proportional')
 # ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
 ax[1,1].legend()
 

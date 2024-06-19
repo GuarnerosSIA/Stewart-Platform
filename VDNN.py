@@ -7,8 +7,6 @@ from controlClasses.constants import*
 t = 1
 dt = 0.001
 
-print(QLQR1)
-print(QLQR2)
 
 dnnV = ValueDNN(QLQR3,RLQR3,BLQR3,ALQR3,PLQR3,alpha,beta,dt,w0,c)
 delta = np.random.random((12,1))*10
@@ -19,10 +17,10 @@ steps = 5000
 plin = np.zeros((nStates*nStates,steps))
 
 
-print(dnnV.gamma)
-print(dnnV.phi1)
-print(dnnV.phi2)
-print(dnnV.phi3)
+# print(dnnV.gamma)
+# print(dnnV.phi1)
+# print(dnnV.phi2)
+# print(dnnV.phi3)
 
 for i in range(steps-1):
     dnnV.pUpdate()
@@ -41,11 +39,10 @@ for i in range(steps-1):
 # p22 = [x[1,1] for x in dnnV.P]
 
 plt.plot(plin.T[:-1,:])
-
+print(dnnV.P[-1])
 
 # plt.plot(weights)
 
 plt.show()
 
 
-# print(dnnV.P[-1])
