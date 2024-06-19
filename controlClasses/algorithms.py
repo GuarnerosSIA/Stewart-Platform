@@ -95,6 +95,14 @@ class LQR():
     def opControl(self,delta):
         return self.K[-1]@delta
     
+    def ocwPD(self,error,errorDerivative,kpGain,kdGain):
+        controlProportional = np.multiply(error,kpGain)
+        controlDerivative = np.multiply(errorDerivative,kdGain)
+        controlPD = controlProportional + controlDerivative
+        delta = np.reshape(np.concatenate((error,errorDerivative)),(12,1))
+        ocElement = self.K[-1]@delta
+        return controlPD, ocElement, delta
+
     def rDE(self,t,p):
         pa = p@self.A
         ap = self.A.T@p

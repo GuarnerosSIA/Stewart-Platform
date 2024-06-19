@@ -25,27 +25,27 @@ control = np.zeros((1,6))+255
 
 ## PD control
 kp = np.array([
-    [-500,-500,-500,-500,-500,-500]
+    [-100,-100,-100,-100,-100,-100]
     ])
 
 nKp = np.reshape(kp,(6,1))
 
 kd = np.array(
-    [-5,-5,-5,-5,-5,-5]
+    [-10,-10,-10,-10,-10,-10]
 )
 
 ## LQR 6
 ALQR = np.zeros((12,12))
 ALQR[:6,6:] = np.eye(6)
-ALQR[6:,:6] = -np.eye(6)*500
-ALQR[6:,6:] = -np.eye(6)*5
+ALQR[6:,:6] = -np.eye(6)*100
+ALQR[6:,6:] = -np.eye(6)*10
 
 BLQR = np.zeros((12,6))
 BLQR[6:,:] = np.eye(6)
 
 QLQR = np.zeros((12,12))
-QLQR[:6,:6] = np.eye(6)*500
-QLQR[6:,6:] = np.eye(6)*5
+QLQR[:6,:6] = np.eye(6)*100
+QLQR[6:,6:] = np.eye(6)*10
 
 RLQR = np.eye(6)*0.01
 
@@ -55,15 +55,15 @@ PLQR = np.zeros((12,12))
 # LQR 1
 ALQR1 = np.zeros((2,2))
 ALQR1[:1,1:] = np.eye(1)
-ALQR1[1:,:1] = -np.eye(1)*500
-ALQR1[1:,1:] = -np.eye(1)*5
+ALQR1[1:,:1] = -np.eye(1)*100
+ALQR1[1:,1:] = -np.eye(1)*10
 
 BLQR1 = np.zeros((2,1))
 BLQR1[1:,:] = np.eye(1)
 
 QLQR1 = np.zeros((1,1))
-QLQR1[:1,:1] = np.eye(1)*500
-QLQR1[1:,1:] = np.eye(1)*5
+QLQR1[:1,:1] = np.eye(1)*100
+QLQR1[1:,1:] = np.eye(1)*10
 
 RLQR1 = np.eye(1)*0.01
 

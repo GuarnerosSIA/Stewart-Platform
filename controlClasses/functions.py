@@ -43,8 +43,3 @@ def sendReceive(integers2Send, serialObject):
     data_received = serialObject.readline()
     return data_received.decode('utf-8')
 
-def PDControl(error,errorDerivative,kp,kd):
-    controlProportional = np.multiply(error,kp)
-    controlDerivative = np.multiply(errorDerivative,kd)
-    controlPD = controlProportional + controlDerivative
-    return controlPD

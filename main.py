@@ -75,17 +75,16 @@ for idx, idt in enumerate(tiempo):
         dotError[idx,5] = motor6.derivative(error[idx,5])
         # Calculate the proportional and derivative control for the PD
         
-        delta = np.reshape(np.concatenate((error[idx,:6],dotError[idx,:6])),(12,1))
-        controlAux = PDControl(error[idx,:],dotError[idx,:],kp,kd)
-        control = vControlBound(controlLQR.opControl(delta)[:,0]+controlAux[0,:])
+        pdc,oc,delta = controlLQR.ocwPD(error[idx,:],dotError[idx,:],kp,kd)
+        control = vControlBound((pdc+oc)[:,0])
 
         valueLQR[idx,0] = valueFunctionLQR(delta,control)
 
         # controlPD[idx,0] = control[0]
         
         # See the information send
-        print(control)
-        print(integers_to_send)
+        # print(control)
+        # print(integers_to_send)
     
 
 

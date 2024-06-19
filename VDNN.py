@@ -8,7 +8,7 @@ t = 150000
 dt = 0.005
 
 
-dnnV = ValueDNN(QLQR,RLQR,BLQR,ALQR,PLQR,alpha,beta,dt,w0,c)
+dnnV = ValueDNN(QLQR1,RLQR1,BLQR1,ALQR1,PLQR1,alpha,beta,dt,w0,c)
 delta = np.random.random((2,1))*10
 weights = [dnnV.w0[0][0]]
 
