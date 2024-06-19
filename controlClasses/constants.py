@@ -56,32 +56,35 @@ PLQR = np.zeros((12,12))
 # LQR 3
 ALQR3 = np.zeros((12,12))
 ALQR3[:6,6:] = np.eye(6)
-ALQR3[6:,:6] = -np.eye(6)*15
-ALQR3[6:,6:] = -np.eye(6)*4
+ALQR3[6:,:6] = -np.eye(6)*100
+ALQR3[6:,6:] = -np.eye(6)*15
 
 BLQR3 = np.zeros((12,6))
 BLQR3[6:,:] = np.eye(6)
 
 QLQR3 = np.zeros((12,12))
-QLQR3[:6,:6] = np.eye(6)*0.1
-QLQR3[6:,6:] = np.eye(6)*0.1
+QLQR3[:6,:6] = np.eye(6)*10
+QLQR3[6:,6:] = np.eye(6)*0.05
+
 
 RLQR3 = np.eye(6)*0.01
 
 
 PLQR3 = np.zeros((12,12))
-PLQR3[0,0]=5
-PLQR3[1,1]=5
-PLQR3[2,2]=5
-PLQR3[3,3]=5
-PLQR3[4,4]=5
-PLQR3[5,5]=5
-PLQR3[6,6]=5
-PLQR3[7,7]=5
-PLQR3[8,8]=5
-PLQR3[9,9]=5
-PLQR3[10,10]=5
-PLQR3[11,11]=5
+ppdiag =5
+pddiag = 5
+PLQR3[0,0]=ppdiag
+PLQR3[1,1]=ppdiag
+PLQR3[2,2]=ppdiag
+PLQR3[3,3]=ppdiag
+PLQR3[4,4]=ppdiag
+PLQR3[5,5]=ppdiag
+PLQR3[6,6]=pddiag
+PLQR3[7,7]=pddiag
+PLQR3[8,8]=pddiag
+PLQR3[9,9]=pddiag
+PLQR3[10,10]=pddiag
+PLQR3[11,11]=pddiag
 
 # Differential Neural Network
 nStates = 12
@@ -91,8 +94,8 @@ nNeuronsV = 5
 alpha = 0.5
 beta =  0.5
 
-w0 = np.random.random((nNeuronsV,1))*50
-c = np.random.random((nNeuronsV,nStates)).T*0.01
+w0 = np.random.random((nNeuronsV,1))*10
+c = np.random.random((nNeuronsV,nStates)).T*0.04
 # print(PLQR)
 # print(PLQR2)
 # Storage

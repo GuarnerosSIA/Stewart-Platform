@@ -39,6 +39,8 @@ dotError = np.zeros((time_steps,6))
 controlKillMe = np.zeros((time_steps,6))
 
 valueLQR = np.zeros((time_steps,1))
+plin = np.zeros((nStates*nStates,time_steps))
+
 
 # Measure of the time
 tic = time.time()
@@ -46,10 +48,9 @@ tic = time.time()
 # A class for the LQR is created in order to apply Linear Optimal Control
 controlLQR = LQR(QLQR,RLQR,BLQR,ALQR,PLQR,0.01,0.0000001)
 controlDNN = ValueDNN(QLQR3,RLQR3,BLQR3,ALQR3,PLQR3,alpha,beta,dt,w0,c)
-print(PLQR)
 #The Ricatti equation solution is computed
 controlLQR.gainsComputation()
-print(controlLQR.P)
+print(ALQR3)
 
 for idx, idt in enumerate(tiempo):
     # Send control value and received actuators poition
@@ -83,7 +84,9 @@ for idx, idt in enumerate(tiempo):
 
         valueLQR[idx,0] = valueFunctionLQR(delta,control)
 
+        P = controlDNN.P[-1]
         
+        plin[:,idx] = P.flatten()
         
         # See the information send
         # print(control)
@@ -146,7 +149,7 @@ ax[1,0].legend()
 # ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
 ax[1,1].plot(tiempo,controlKillMe[:,0], label = 'Proportional')
 # ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
-ax[1,1].legend()
+# ax[1,1].legend()
 
 
 plt.show() 
