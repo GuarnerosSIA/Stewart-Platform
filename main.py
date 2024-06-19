@@ -55,7 +55,7 @@ print(controlLQR.P)
 
 for idx, idt in enumerate(tiempo):
     # Send control value and received actuators poition
-    integers_to_send = [int(control[0,i]) for i in range(6)]
+    integers_to_send = control.astype(int).tolist()
     
     actuators = sendReceive(integers_to_send,ser)
     # Evaluate if the received information was correct
@@ -74,31 +74,24 @@ for idx, idt in enumerate(tiempo):
         dotError[idx,4] = motor5.derivative(error[idx,4])
         dotError[idx,5] = motor6.derivative(error[idx,5])
         # Calculate the proportional and derivative control for the PD
-        controlProportional = np.multiply(error[idx,:],kp)
-        controlDerivative = np.multiply(dotError[idx,:],kd)
-               
-        controlP[idx,:] = controlProportional
-        controlD[idx,:] = controlDerivative
-        controlPD[idx,:] = controlProportional + controlDerivative
         
-        # storage the control in a variable in order to send it to the arduino
-
-        # control = vControlBound(controlProportional + controlDerivative)
-        
-        # reshape the delta error to use it in the computation
         delta = np.reshape(np.concatenate((error[idx,:6],dotError[idx,:6])),(12,1))
-        aux = vControlBound(controlLQR.opControl(delta)[:,0]+controlPD[idx,:6])
-        control[0,:6] = [int(aux[i]) for i in range(6)]
-        controlPD[idx,0] = control[0,0]
-        valueLQR[idx,0] = valueFunctionLQR(delta,control[:,:6].T)
+        controlAux = PDControl(error[idx,:],dotError[idx,:],kp,kd)
+        control = vControlBound(controlLQR.opControl(delta)[:,0]+controlAux[0,:])
+
+        valueLQR[idx,0] = valueFunctionLQR(delta,control)
+
+        # controlPD[idx,0] = control[0]
+        
         # See the information send
-        print(actuators)
+        print(control)
+        print(integers_to_send)
     
 
 
 # Obtain the time employed to run the algorithm
 toc = time.time() - tic
-print(toc)
+print(toc/time_steps)
 
 # Create a dictionary for storing the information
 dataAquired = {

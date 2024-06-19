@@ -71,8 +71,8 @@ RLQR1 = np.eye(1)*0.01
 PLQR1 = np.zeros((2,2))
 
 # Differential Neural Network
-nStates = 2
-nInputs = 1
+nStates = 12
+nInputs = 6
 nNeuronsV = 5
 
 alpha = 0.5

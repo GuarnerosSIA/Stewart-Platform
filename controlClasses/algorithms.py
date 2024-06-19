@@ -1,6 +1,9 @@
 import numpy as np
 
 def DoPri45Step(f,t,x,h):
+    """
+    This function is de derivative approximaion of Dorman Prince RK45 method
+    """
     
     k1 = f(t,x)
     k2 = f(t + 1./5*h, x + h*(1./5*k1) )

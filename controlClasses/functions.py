@@ -15,6 +15,7 @@ def control_bounds(x):
 
 
 def valueFunctionLQR(system, control):
+    control = control.reshape((-1,1))
     systemCost = system.T@QLQR@system
     controlCost = control.T@RLQR@control
     return systemCost + controlCost
@@ -41,3 +42,9 @@ def sendReceive(integers2Send, serialObject):
     serialObject.write(data_to_send.encode('utf-8'))
     data_received = serialObject.readline()
     return data_received.decode('utf-8')
+
+def PDControl(error,errorDerivative,kp,kd):
+    controlProportional = np.multiply(error,kp)
+    controlDerivative = np.multiply(errorDerivative,kd)
+    controlPD = controlProportional + controlDerivative
+    return controlPD
