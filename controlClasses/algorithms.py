@@ -125,17 +125,18 @@ class ValueDNN():
         self.R = R
         self.B = B
         self.A = A
+        self.nNeurons = c.shape[1]
+        self.nStates = c.shape[0]
+        self.nInputs = R.shape[0]
         self.gamma = 0.5*((alpha**2)+(beta**2))
-        self.phi1 = self.gamma*np.eye(1) + R
+        self.phi1 = self.gamma*np.eye(self.nInputs) + R
         self.invPhi = np.linalg.inv(self.phi1)
-        self.phi2 = 0.5*self.gamma*np.eye(2) + Q
-        self.phi3 = 0.5*np.eye(2) -  0.25*B@np.linalg.inv(self.phi1)@B.T
+        self.phi2 = 0.5*self.gamma*np.eye(self.nStates) + Q
+        self.phi3 = 0.5*np.eye(self.nStates) -  0.25*B@np.linalg.inv(self.phi1)@B.T
         self.P = [P0]
         self.dt = dt
         self.t = 0
         self.w0 = w0
-        self.nNeurons = w0.shape[0]
-        self.nStates = w0.shape[1]
         self.c = c
 
     def pUpdate(self):
