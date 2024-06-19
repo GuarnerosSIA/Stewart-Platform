@@ -5,16 +5,16 @@ from controlClasses.functions import DoPri45Step
 from controlClasses.constants import*
 
 t = 1
-dt = 0.0001
+dt = 0.001
 
 print(QLQR1)
 print(QLQR2)
 
-dnnV = ValueDNN(QLQR2,RLQR2,BLQR2,ALQR2,PLQR2,alpha,beta,dt,w0,c)
-delta = np.random.random((4,1))*10
+dnnV = ValueDNN(QLQR3,RLQR3,BLQR3,ALQR3,PLQR3,alpha,beta,dt,w0,c)
+delta = np.random.random((12,1))*10
 weights = [dnnV.w0[0][0]]
 
-steps = 1000
+steps = 5000
     
 plin = np.zeros((nStates*nStates,steps))
 
@@ -28,9 +28,9 @@ for i in range(steps-1):
     dnnV.pUpdate()
     P = dnnV.P[-1]
     Pdot = dnnV.pEquation(0,P)
-    # dnnV.wUpdate(delta)
-    # delta=delta*0.99
-    plin[:,i] = Pdot.flatten()
+    dnnV.wUpdate(delta)
+    delta=delta*0.99
+    plin[:,i] = P.flatten()
     # weights.append(dnnV.w0[0][0])
     
 

@@ -79,15 +79,15 @@ PLQR1[1,1]=5
 # LQR 2
 ALQR2 = np.zeros((4,4))
 ALQR2[:2,2:] = np.eye(2)
-ALQR2[2:,:2] = -np.eye(2)*10
-ALQR2[2:,2:] = -np.eye(2)*1
+ALQR2[2:,:2] = -np.eye(2)*15
+ALQR2[2:,2:] = -np.eye(2)*4
 
 BLQR2 = np.zeros((4,2))
 BLQR2[2:,:] = np.eye(2)
 
 QLQR2 = np.zeros((4,4))
-QLQR2[:2,:2] = np.eye(2)*0.001
-QLQR2[2:,2:] = np.eye(2)*0.001
+QLQR2[:2,:2] = np.eye(2)*0.01
+QLQR2[2:,2:] = np.eye(2)*0.01
 
 RLQR2 = np.eye(2)*0.001
 
@@ -98,9 +98,40 @@ PLQR2[1,1]=1
 PLQR2[2,2]=1
 PLQR2[3,3]=1
 
+
+# LQR 3
+ALQR3 = np.zeros((12,12))
+ALQR3[:6,6:] = np.eye(6)
+ALQR3[6:,:6] = -np.eye(6)*15
+ALQR3[6:,6:] = -np.eye(6)*4
+
+BLQR3 = np.zeros((12,6))
+BLQR3[6:,:] = np.eye(6)
+
+QLQR3 = np.zeros((12,12))
+QLQR3[:6,:6] = np.eye(6)*0.01
+QLQR3[6:,6:] = np.eye(6)*0.01
+
+RLQR3 = np.eye(6)*0.001
+
+
+PLQR3 = np.zeros((12,12))
+PLQR3[0,0]=5
+PLQR3[1,1]=5
+PLQR3[2,2]=5
+PLQR3[3,3]=5
+PLQR3[4,4]=5
+PLQR3[5,5]=5
+PLQR3[6,6]=5
+PLQR3[7,7]=5
+PLQR3[8,8]=5
+PLQR3[9,9]=5
+PLQR3[10,10]=5
+PLQR3[11,11]=5
+
 # Differential Neural Network
-nStates = 4
-nInputs = 2
+nStates = 12
+nInputs = 6
 nNeuronsV = 5
 
 alpha = 0.5
