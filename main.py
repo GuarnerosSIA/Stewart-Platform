@@ -75,14 +75,14 @@ for idx, idt in enumerate(tiempo):
         # Calculate the proportional and derivative control for the PD
         
         #Control LQR + PD
-        # pdc,oc,delta = controlLQR.ocwPD(error[idx,:],dotError[idx,:],kp,kd)
-        # control = vControlBound((pdc+oc)[:,0])
-        # controlKillMe[idx] = (pdc+oc)[:,0]
+        pdc,oc,delta = controlLQR.ocwPD(error[idx,:],dotError[idx,:],kp,kd)
+        control = vControlBound((pdc+oc)[:,0])
+        controlKillMe[idx] = (pdc+oc)[:,0]
         
         #Control LQQR + DNN
-        optimalControl, delta = controlDNN.control(error[idx,:],dotError[idx,:])
-        control = vControlBound((optimalControl)[:,0])
-        controlKillMe[idx] = (optimalControl)[:,0]
+        # optimalControl, delta = controlDNN.control(error[idx,:],dotError[idx,:])
+        # control = vControlBound((optimalControl)[:,0])
+        # controlKillMe[idx] = (optimalControl)[:,0]
 
         valueLQR[idx,0] = valueFunctionLQR(delta,control)
 
@@ -134,8 +134,8 @@ dataAquired = {
 # Create a .csv file that containsthe information computed
 df = pd.DataFrame(dataAquired)
 
-# df.to_csv(FILECSVPD)
-df.to_csv(FILECSVLQR)
+df.to_csv(FILECSVPD)
+# df.to_csv(FILECSVLQR)
 
 
 # Show Figures

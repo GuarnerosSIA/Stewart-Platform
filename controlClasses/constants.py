@@ -100,5 +100,5 @@ c = (np.random.random((nNeuronsV,nStates)).T-0.5)*0.015
 # print(PLQR2)
 # Storage
 
-FILECSVPD = 'data\platformPD.csv'
-FILECSVLQR = 'data\platformLQR.csv'
+FILECSVPD = 'data\platformPD_prueba.csv'
+FILECSVLQR = 'data\platformLQR_prueba.csv'
