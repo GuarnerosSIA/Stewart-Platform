@@ -2,9 +2,9 @@ import numpy as np
 
 # Default parameters
 
-frecuencia = 0.1
+frecuencia = 0.05
 dt = 0.01
-expected_time = 10
+expected_time = 40
 time_steps = int(expected_time/dt)
 tiempo = np.linspace(0,expected_time,time_steps, endpoint= False)
 
@@ -56,23 +56,23 @@ PLQR = np.zeros((12,12))
 # LQR 3
 ALQR3 = np.zeros((12,12))
 ALQR3[:6,6:] = np.eye(6)
-ALQR3[6:,:6] = -np.eye(6)*100
-ALQR3[6:,6:] = -np.eye(6)*15
+ALQR3[6:,:6] = -np.eye(6)*20
+ALQR3[6:,6:] = -np.eye(6)*19
 
 BLQR3 = np.zeros((12,6))
 BLQR3[6:,:] = np.eye(6)
 
 QLQR3 = np.zeros((12,12))
-QLQR3[:6,:6] = np.eye(6)*10
-QLQR3[6:,6:] = np.eye(6)*0.05
+QLQR3[:6,:6] = np.eye(6)*0.01
+QLQR3[6:,6:] = np.eye(6)*0.01
 
 
 RLQR3 = np.eye(6)*0.01
 
 
 PLQR3 = np.zeros((12,12))
-ppdiag =5
-pddiag = 5
+ppdiag =0.3
+pddiag = 0.3
 PLQR3[0,0]=ppdiag
 PLQR3[1,1]=ppdiag
 PLQR3[2,2]=ppdiag
@@ -89,13 +89,13 @@ PLQR3[11,11]=pddiag
 # Differential Neural Network
 nStates = 12
 nInputs = 6
-nNeuronsV = 5
+nNeuronsV = 10
 
-alpha = 0.5
-beta =  0.5
+alpha = 0.55
+beta =  0.55
 
-w0 = np.random.random((nNeuronsV,1))*10
-c = np.random.random((nNeuronsV,nStates)).T*0.04
+w0 = np.random.random((nNeuronsV,1))*1
+c = (np.random.random((nNeuronsV,nStates)).T-0.5)*0.015
 # print(PLQR)
 # print(PLQR2)
 # Storage

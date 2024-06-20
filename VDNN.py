@@ -12,13 +12,13 @@ dnnV = ValueDNN(QLQR3,RLQR3,BLQR3,ALQR3,PLQR3,alpha,beta,dt,w0,c)
 delta = np.random.random((12,1))*20-10
 weights = [dnnV.w0[0][0]]
 
-steps = 10000
+steps = 3000
     
 plin = np.zeros((nStates*nStates,steps))
 
 
 # print(dnnV.gamma)
-# print(dnnV.phi1)
+print(dnnV.phi1)
 # print(dnnV.phi2)
 # print(dnnV.phi3)
 
@@ -40,7 +40,7 @@ for i in range(steps-1):
 
 plt.plot(plin.T[:-1,:])
 # print(dnnV.P[-1])
-print(QLQR3)
+print(P)
 
 # plt.plot(weights)
 
