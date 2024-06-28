@@ -2,9 +2,9 @@ import numpy as np
 
 # Default parameters
 
-frecuencia = 0.1
+frecuencia = 0.05
 dt = 0.01
-expected_time = 10
+expected_time = 40
 time_steps = int(expected_time/dt)
 tiempo = np.linspace(0,expected_time,time_steps, endpoint= False)
 
