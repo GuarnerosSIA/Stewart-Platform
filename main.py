@@ -12,7 +12,7 @@ from controlClasses.functions import*
 
 # Start the serial port 
 
-ser = serial.Serial('COM10', 250000)
+ser = serial.Serial('COM3', 250000)
 time.sleep(3)
 
 # create a scalar function into a function for vectors
@@ -134,7 +134,7 @@ dataAquired = {
 # Create a .csv file that containsthe information computed
 df = pd.DataFrame(dataAquired)
 
-df.to_csv(FILECSVPD)
+# df.to_csv(FILECSVPD)
 # df.to_csv(FILECSVLQR)
 
 
