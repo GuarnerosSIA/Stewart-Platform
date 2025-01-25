@@ -20,7 +20,7 @@ time.sleep(3)
 # create a scalar function into a function for vectors
 vControlBound = np.vectorize(control_bounds)
 
-rlIterations = 5
+rlIterations = 10
 actorNN,criticNN = loadRLNN()
 
 
@@ -95,6 +95,15 @@ for i in range(rlIterations):
             P = controlDNN.P[-1]
         
             plin[:,idx] = P.flatten()
+            # Condicion de delta
+            
+            watcher = np.linalg.norm(delta)
+            if watcher>5.8:
+                print(watcher)
+                print("Ahhhhhh")
+                break
+
+
 
 
     #RL Neural network    
@@ -105,6 +114,7 @@ for i in range(rlIterations):
     # Obtain the time employed to run the algorithm
     toc = time.time() - tic
     print(toc/time_steps)
+    print(valueLQR[-1,0])
 
 
 
@@ -115,7 +125,7 @@ for i in range(rlIterations):
 
     # Create a .csv file that containsthe information computed
     df = pd.DataFrame(dataAquired)
-    time.sleep(1)
+    time.sleep(10)
 
 # df.to_csv(FILECSVPD)
 # df.to_csv(FILECSVLQR)
