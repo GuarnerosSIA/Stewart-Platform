@@ -4,7 +4,7 @@ import numpy as np
 
 frecuencia = 0.05
 dt = 0.01
-expected_time = 40
+expected_time = 5
 time_steps = int(expected_time/dt)
 tiempo = np.linspace(0,expected_time,time_steps, endpoint= False)
 

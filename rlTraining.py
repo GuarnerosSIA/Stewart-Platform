@@ -2,6 +2,7 @@
 import onnx
 import onnxruntime as ort
 import numpy as np
+import subprocess
 
 # Variables comunes
 actor_State = 'input_1'

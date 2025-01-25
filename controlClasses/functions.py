@@ -43,3 +43,40 @@ def sendReceive(integers2Send, serialObject):
     data_received = serialObject.readline()
     return data_received.decode('utf-8')
 
+def saveData(measures, positions, control, motors, functional):
+    motor1 = motors[0]
+    motor2 = motors[1]
+    motor3 = motors[2]
+    motor4 = motors[3]
+    motor5 = motors[4]
+    motor6 = motors[5]
+    dataAquired = {
+    'System 1':measures[:,0], 'System 2':measures[:,1], 'System 3':measures[:,2],
+    'System 4':measures[:,3], 'System 5':measures[:,4], 'System 6':measures[:,5],
+    'Reference 1':positions[:,0], 'Reference 2':positions[:,1], 'Reference 3':positions[:,2],
+    'Reference 4':positions[:,3], 'Reference 5':positions[:,4], 'Reference 6':positions[:,5],
+    
+    'M1 STA':motor1.w1[1:],
+    'DM1 STA':motor1.w2[1:],
+    'M2 STA':motor2.w1[1:],
+    'DM2 STA':motor2.w2[1:],
+    'M3 STA':motor3.w1[1:],
+    'DM3 STA':motor3.w2[1:],
+    'M4 STA':motor4.w1[1:],
+    'DM4 STA':motor4.w2[1:],
+    'M5 STA':motor5.w1[1:],
+    'DM5 STA':motor5.w2[1:],
+    'M6 STA':motor6.w1[1:],
+    'DM6 STA':motor6.w2[1:],
+
+    'LQR Value function':functional[:,0],
+    'LQR Integral value function':np.cumsum(functional[:,0]),
+
+    'Control 1':control[:,0],
+    'Control 2':control[:,1],
+    'Control 3':control[:,2],
+    'Control 4':control[:,3],
+    'Control 5':control[:,4],
+    'Control 6':control[:,5]
+}
+    return dataAquired

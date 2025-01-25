@@ -10,8 +10,10 @@ from controlClasses.algorithms import DSTA, LQR, ValueDNN
 from controlClasses.constants import*
 from controlClasses.functions import*
 
-# Start the serial port 
 
+
+
+# Start the serial port 
 ser = serial.Serial('COM3', 250000)
 time.sleep(3)
 
@@ -50,7 +52,7 @@ controlLQR = LQR(QLQR3,RLQR3,BLQR3,ALQR3,PLQR3,0.01,0.0000001)
 controlDNN = ValueDNN(QLQR3,RLQR3,BLQR3,ALQR3,PLQR3,alpha,beta,dt,w0,c)
 #The Ricatti equation solution is computed
 controlLQR.gainsComputation()
-print(ALQR3)
+
 
 for idx, idt in enumerate(tiempo):
     # Send control value and received actuators poition
@@ -73,16 +75,16 @@ for idx, idt in enumerate(tiempo):
         dotError[idx,4] = motor5.derivative(error[idx,4])
         dotError[idx,5] = motor6.derivative(error[idx,5])
         # Calculate the proportional and derivative control for the PD
-        
+       
         #Control LQR + PD
-        pdc,oc,delta = controlLQR.ocwPD(error[idx,:],dotError[idx,:],kp,kd)
-        control = vControlBound((pdc+oc)[:,0])
-        controlKillMe[idx] = (pdc+oc)[:,0]
+        # pdc,oc,delta = controlLQR.ocwPD(error[idx,:],dotError[idx,:],kp,kd)
+        # control = vControlBound((pdc+oc)[:,0])
+        # controlKillMe[idx] = (pdc+oc)[:,0]
         
         #Control LQQR + DNN
-        # optimalControl, delta = controlDNN.control(error[idx,:],dotError[idx,:])
-        # control = vControlBound((optimalControl)[:,0])
-        # controlKillMe[idx] = (optimalControl)[:,0]
+        optimalControl, delta = controlDNN.control(error[idx,:],dotError[idx,:])
+        control = vControlBound((optimalControl)[:,0])
+        controlKillMe[idx] = (optimalControl)[:,0]
 
         valueLQR[idx,0] = valueFunctionLQR(delta,control)
 
@@ -99,46 +101,23 @@ for idx, idt in enumerate(tiempo):
 # Obtain the time employed to run the algorithm
 toc = time.time() - tic
 print(toc/time_steps)
+ser.close()
+
+
 
 # Create a dictionary for storing the information
-dataAquired = {
-    'System 1':measures[:,0], 'System 2':measures[:,1], 'System 3':measures[:,2],
-    'System 4':measures[:,3], 'System 5':measures[:,4], 'System 6':measures[:,5],
-    'Reference 1':positions[:,0], 'Reference 2':positions[:,1], 'Reference 3':positions[:,2],
-    'Reference 4':positions[:,3], 'Reference 5':positions[:,4], 'Reference 6':positions[:,5],
-    
-    'M1 STA':motor1.w1[1:],
-    'DM1 STA':motor1.w2[1:],
-    'M2 STA':motor2.w1[1:],
-    'DM2 STA':motor2.w2[1:],
-    'M3 STA':motor3.w1[1:],
-    'DM3 STA':motor3.w2[1:],
-    'M4 STA':motor4.w1[1:],
-    'DM4 STA':motor4.w2[1:],
-    'M5 STA':motor5.w1[1:],
-    'DM5 STA':motor5.w2[1:],
-    'M6 STA':motor6.w1[1:],
-    'DM6 STA':motor6.w2[1:],
-
-    'LQR Value function':valueLQR[:,0],
-    'LQR Integral value function':np.cumsum(valueLQR[:,0]),
-
-    'Control 1':controlKillMe[:,0],
-    'Control 2':controlKillMe[:,1],
-    'Control 3':controlKillMe[:,2],
-    'Control 4':controlKillMe[:,3],
-    'Control 5':controlKillMe[:,4],
-    'Control 6':controlKillMe[:,5]
-}
+motors = [motor1, motor2, motor3, motor4, motor5, motor6]
+dataAquired = saveData(measures,positions,controlKillMe,motors,valueLQR)
 
 # Create a .csv file that containsthe information computed
 df = pd.DataFrame(dataAquired)
-
 # df.to_csv(FILECSVPD)
 # df.to_csv(FILECSVLQR)
 
 
-# Show Figures
+# Show 
+
+
 fig,ax = plt.subplots(2,2)
 
 fig.set_figheight(5)
@@ -167,4 +146,3 @@ ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
 plt.show() 
 
 # Close the serial connection
-ser.close()
