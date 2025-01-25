@@ -20,13 +20,13 @@ time.sleep(3)
 # create a scalar function into a function for vectors
 vControlBound = np.vectorize(control_bounds)
 
-# A class for the Discrete Super Stwisting Algorithm is 
-# created for each of the motors used
-
 rlIterations = 5
+actorNN,criticNN = loadRLNN()
+
 
 for i in range(rlIterations):
-
+    # A class for the Discrete Super Stwisting Algorithm is 
+    # created for each of the motors used
     motor1 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
     motor2 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
     motor3 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
@@ -95,10 +95,12 @@ for i in range(rlIterations):
             P = controlDNN.P[-1]
         
             plin[:,idx] = P.flatten()
-        
-        
-    
 
+
+    #RL Neural network    
+    input_data_actor = np.random.random((1,10)).astype(np.float32)
+    actionRL = actorNN.run(None,{actor_State:w0.T})[0][0]
+    w0 = w0 + np.reshape(actionRL,(10,1))
 
     # Obtain the time employed to run the algorithm
     toc = time.time() - tic

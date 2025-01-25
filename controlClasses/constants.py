@@ -95,6 +95,7 @@ alpha = 0.55
 beta =  0.55
 
 w0 = np.random.random((nNeuronsV,1))*1
+w0 = w0.astype(np.float32)
 c = (np.random.random((nNeuronsV,nStates)).T-0.5)*0.015
 # print(PLQR)
 # print(PLQR2)
