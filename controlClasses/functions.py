@@ -1,6 +1,7 @@
 import numpy as np
 from controlClasses.constants import ALQR,BLQR,QLQR,RLQR,PLQR
-import serial
+import onnx
+import onnxruntime as ort
 
 # Serial communication
 def control_bounds(x):
@@ -80,3 +81,16 @@ def saveData(measures, positions, control, motors, functional):
     'Control 6':control[:,5]
 }
     return dataAquired
+
+def loadRLNN():
+    # Load NNs
+    path_actor = "C:\\Users\\guarn\\Dropbox\\Alejandro\\DoctoradoITESM\\Overleaf\\SGP control\\Stewart platform physical control\\actorRLSGP.onnx"
+    model_actor = onnx.load(path_actor)
+    onnx.checker.check_model(model_actor)
+    actor_nn = ort.InferenceSession(path_actor)
+
+    path_critic = "C:\\Users\\guarn\\Dropbox\\Alejandro\\DoctoradoITESM\\Overleaf\\SGP control\\Stewart platform physical control\\criticRLSGP1.onnx"
+    model_critic = onnx.load(path_critic)
+    onnx.checker.check_model(model_critic)
+    critic_nn = ort.InferenceSession(path_critic)
+    return actor_nn,critic_nn

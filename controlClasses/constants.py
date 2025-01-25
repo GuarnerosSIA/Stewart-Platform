@@ -102,3 +102,8 @@ c = (np.random.random((nNeuronsV,nStates)).T-0.5)*0.015
 
 FILECSVPD = 'data\platformPD_prueba.csv'
 FILECSVLQR = 'data\platformLQR_prueba.csv'
+
+# Reinforcement learning
+actor_State = 'input_1'
+critic_State = 'input_1'
+critic_Action = 'input_2'
