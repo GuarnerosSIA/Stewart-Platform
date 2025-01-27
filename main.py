@@ -107,14 +107,22 @@ for i in range(rlIterations):
 
 
     #RL Neural network    
-    input_data_actor = np.random.random((1,10)).astype(np.float32)
-    actionRL = actorNN.run(None,{actor_State:w0.T})[0][0]
+    
+    nnInputs = w0.T*0.005
+
+    actionNN = actorNN.run(None,{actor_State:nnInputs})[0]
+    actionRL = actionNN[0]
+    qValue = criticNN.run(None,{critic_State:nnInputs,
+                                critic_Action:actionNN})
+    
+    
     w0 = w0 + np.reshape(actionRL,(10,1))
 
     # Obtain the time employed to run the algorithm
     toc = time.time() - tic
     print(toc/time_steps)
     print(valueLQR[-1,0])
+    print(qValue)
 
 
 
