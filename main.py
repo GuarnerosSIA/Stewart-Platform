@@ -23,6 +23,10 @@ vControlBound = np.vectorize(control_bounds)
 rlIterations = 10
 actorNN,criticNN = loadRLNN()
 
+np.random.seed(1)
+w0 = np.random.random((nNeuronsV,1))*1
+w0 = w0.astype(np.float32)
+
 
 for i in range(rlIterations):
     # A class for the Discrete Super Stwisting Algorithm is 
