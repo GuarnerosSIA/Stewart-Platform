@@ -20,7 +20,7 @@ time.sleep(3)
 # create a scalar function into a function for vectors
 vControlBound = np.vectorize(control_bounds)
 
-rlIterations = 10
+rlIterations = 1
 actorNN,criticNN = loadRLNN()
 
 np.random.seed(1)
@@ -151,8 +151,8 @@ fig,ax = plt.subplots(2,2)
 fig.set_figheight(5)
 fig.set_figwidth(5)
 
-ax[0,0].plot(tiempo, measures[:,0], label = 'System 1')
-ax[0,0].plot(tiempo, positions[:,0], label = 'Reference 1')
+ax[0,0].plot(tiempo, measures[:,3], label = 'System 1')
+ax[0,0].plot(tiempo, positions[:,3], label = 'Reference 1')
 ax[0,0].legend()
 
 
