@@ -100,23 +100,23 @@ for i in range(6):
     ax.set_xlim(24,28)
     ax.set_ylim(-150,100)
     ax.grid(True)
-    plt.show()
+    # plt.show()
 
     # plt.savefig(file)
 
 
 
-plt.figure(figsize=(4,4),dpi=300)
+plt.figure(figsize=(4,2),dpi=100)
 
 plt.axes([0.2, 0.15, 0.75, 0.8])
 
 ax = plt.gca()
 
 ax.plot(tiempo,lqrControl['LQR Integral value function'], label = 'LQR+PD', 
-        linewidth=5,linestyle='-', color = 'steelblue')
-ax.plot(tiempo, dnnControl['LQR Integral value function'], label = 'LQR+DNN',
-         linewidth=5,linestyle='-', color = 'tab:red')
-ax.set_ylabel(r'$J_{t}(t_{0},\Delta_{0};u_{op})$',size=12)
+        linewidth=7,linestyle='-.', color = cinnabar)
+ax.plot(tiempo, dnnControl['LQR Integral value function'], label = 'V-DNN',
+         linewidth=7,linestyle=':', color = steelblue)
+ax.set_ylabel(r'$J_{t}(t_{0},\Delta_{0};u_{op})$',size=33)
 ax.set_xlabel(r'Time (s)')
 ax.set_xlim(0,40)
 ax.set_ylim(0,3.5e7)
@@ -127,13 +127,14 @@ plt.axes([0.35, 0.55, 0.5, 0.35])
 ax = plt.gca()
 
 ax.plot(tiempo,lqrControl['LQR Integral value function'], label = 'LQR+PD', 
-        linewidth=5,linestyle='-', color = 'steelblue')
-ax.plot(tiempo, dnnControl['LQR Integral value function'], label = 'LQR+DNN',
-         linewidth=5,linestyle='-', color = 'tab:red')
+        linewidth=7,linestyle='-.', color = cinnabar)
+ax.plot(tiempo, dnnControl['LQR Integral value function'], label = 'V-DNN',
+         linewidth=7,linestyle=':', color = steelblue)
 ax.set_xlim(36,40)
 ax.set_ylim(1.45e7,1.7e7)
 ax.grid(True)
-ax.legend(fontsize=10)
+ax.legend(fontsize=33)
+plt.show()
 
 
 # plt.savefig('./functional.png')

@@ -102,7 +102,7 @@ for i in range(rlIterations):
             # Condicion de delta
             
             watcher = np.linalg.norm(delta)
-            if watcher>5.8:
+            if watcher>7:
                 print(watcher)
                 print("Ahhhhhh")
                 break

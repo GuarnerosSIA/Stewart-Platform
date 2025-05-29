@@ -5,9 +5,9 @@ from matplotlib.animation import FuncAnimation
 from scipy.spatial.transform import Rotation as R
 
 class StewartPlatform:
-    def __init__(self, base_radius=5.0, platform_radius=3.0, 
+    def __init__(self, base_radius=30.0, platform_radius=15.0, 
                  base_angles=None, platform_angles=None, 
-                 min_length=5.0, max_length=10.0):
+                 min_length=20.0, max_length=35.0):
         """
         Initialize Stewart Platform geometry
         
@@ -34,8 +34,16 @@ class StewartPlatform:
         self.platform_angles = np.radians(platform_angles)
         
         # Calculate base and platform attachment points in their local frames
-        self.base_points = self._calculate_circle_points(self.base_radius, self.base_angles)
-        self.platform_points = self._calculate_circle_points(self.platform_radius, self.platform_angles)
+        self.basex = np.array([7.5,-7.5,-25.4,-17.9,17.9,25.4])
+        self.basey = np.array([25,25,-6,-19,-19,-7])
+        self.basez = np.zeros_like(self.basex)
+
+        self.platform_x = np.array([11.7,-11.7,-14.2,-2.5,2.5,14.2])
+        self.platform_y = np.array([9.7,9.7,5.3,-15,-15,5.3])
+        self.platform_z = np.zeros_like(self.platform_x)
+
+        self.base_points = self._calculate_base_points(self.basex,self.basey,self.basez)
+        self.platform_points = self._calculate_base_points(self.platform_x,self.platform_y,self.platform_z)
         
     def _calculate_circle_points(self, radius, angles):
         """Calculate points on a circle given radius and angles"""
@@ -43,6 +51,12 @@ class StewartPlatform:
         y = radius * np.sin(angles)
         z = np.zeros_like(x)
         return np.vstack((x, y, z)).T
+    
+    def _calculate_base_points(self, x,y,z):
+        """Just to stack the values"""
+        return np.vstack((x, y, z)).T
+    
+    
     
     def calculate_leg_vectors(self, position, orientation):
         """
@@ -162,3 +176,64 @@ class StewartPlatform:
         ani = FuncAnimation(fig, update, frames=len(trajectory), interval=interval)
         plt.close()  # Prevents duplicate display in notebooks
         return ani
+    
+
+# Create platform with default parameters
+sp = StewartPlatform()
+
+# Or with custom parameters
+sp_custom = StewartPlatform(
+    base_radius=30.0,
+    platform_radius=15.0,
+    min_length=20.0,
+    max_length=35.0
+)
+
+# Define position [x, y, z] and orientation [roll, pitch, yaw] in degrees
+position = [0.5, 0.5, 20]
+orientation = [10, 5, 0]  # 10° roll, 5° pitch, 0° yaw
+
+# Calculate leg vectors and lengths
+leg_vectors, leg_lengths = sp.calculate_leg_vectors(position, orientation)
+print("Leg lengths:", leg_lengths)
+print("Are lengths valid?", sp.check_leg_lengths(leg_lengths))
+
+# Plot the platform in 3D
+ax = sp.plot_platform(position, orientation)
+plt.show()
+
+
+# Define a trajectory (list of positions/orientations)
+trajectory = [
+    {'position': [0, 0, 20], 'orientation': [0, 0, 0]},
+    {'position': [1, 0, 19], 'orientation': [5, 0, 0]},
+    {'position': [1, 1, 19], 'orientation': [5, 5, 0]},
+    {'position': [0, 1, 18], 'orientation': [0, 5, 5]},
+    {'position': [0, 0, 17], 'orientation': [0, 0, 5]},
+    {'position': [0, 0, 17], 'orientation': [0, 0, 0]},
+    {'position': [1, 0, 18], 'orientation': [5, 0, 0]},
+    {'position': [1, 1, 19], 'orientation': [5, 5, 0]},
+    {'position': [0, 1, 20], 'orientation': [0, 5, 5]},
+    {'position': [0, 0, 21], 'orientation': [0, 0, 5]},
+    {'position': [0, 0, 22], 'orientation': [0, 0, 0]},
+    {'position': [1, 0, 23], 'orientation': [5, 0, 0]},
+    {'position': [1, 1, 23], 'orientation': [5, 5, 0]},
+    {'position': [0, 1, 22], 'orientation': [0, 5, 0]},
+    {'position': [0, 0, 21], 'orientation': [0, 0, 5]},
+]
+
+# Calculate leg lengths for each trajectory point
+all_leg_lengths, valid_flags = sp.follow_trajectory(trajectory)
+# print("All leg lengths:\n", all_leg_lengths)
+# print("Valid positions:", valid_flags)
+
+
+# Create animation (this will display in notebooks or can be saved)
+ani = sp.animate_trajectory(trajectory, interval=300)
+
+# To display in a notebook:
+# from IPython.display import HTML
+# HTML(ani.to_jshtml())
+
+# To save as GIF (requires pillow)
+ani.save('.\\stewart_trajectory.gif', writer='pillow', fps=10)
