@@ -151,8 +151,8 @@ fig,ax = plt.subplots(2,2)
 fig.set_figheight(5)
 fig.set_figwidth(5)
 
-ax[0,0].plot(tiempo, measures[:,3], label = 'System 1')
-ax[0,0].plot(tiempo, positions[:,3], label = 'Reference 1')
+ax[0,0].plot(tiempo, measures[:,1], label = 'System 1')
+ax[0,0].plot(tiempo, positions[:,1], label = 'Reference 1')
 ax[0,0].legend()
 
 

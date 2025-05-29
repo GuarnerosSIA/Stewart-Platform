@@ -3,11 +3,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 from scipy.spatial.transform import Rotation as R
+import pandas as pd
 
 class StewartPlatform:
     def __init__(self, base_radius=30.0, platform_radius=15.0, 
                  base_angles=None, platform_angles=None, 
-                 min_length=20.0, max_length=35.0):
+                 min_length=20.0, max_length=30.0):
         """
         Initialize Stewart Platform geometry
         
@@ -186,7 +187,7 @@ sp_custom = StewartPlatform(
     base_radius=30.0,
     platform_radius=15.0,
     min_length=20.0,
-    max_length=35.0
+    max_length=30.0
 )
 
 # Define position [x, y, z] and orientation [roll, pitch, yaw] in degrees
@@ -199,8 +200,8 @@ print("Leg lengths:", leg_lengths)
 print("Are lengths valid?", sp.check_leg_lengths(leg_lengths))
 
 # Plot the platform in 3D
-ax = sp.plot_platform(position, orientation)
-plt.show()
+# ax = sp.plot_platform(position, orientation)
+# plt.show()
 
 
 # Define a trajectory (list of positions/orientations)
@@ -222,18 +223,32 @@ trajectory = [
     {'position': [0, 0, 21], 'orientation': [0, 0, 5]},
 ]
 
+# Obtain the cvs file
+df = pd.read_csv('.\\data\\dusthon_boat.csv')
+trajectory = [
+    {'position': [0, 0, row['Y']+20], 'orientation': [row['Roll'],0,  row['Pitch']]}
+    for _, row in df.iterrows()
+]
+
 # Calculate leg lengths for each trajectory point
 all_leg_lengths, valid_flags = sp.follow_trajectory(trajectory)
-# print("All leg lengths:\n", all_leg_lengths)
-# print("Valid positions:", valid_flags)
+print("All leg lengths:\n", all_leg_lengths)
+print("Valid positions:", valid_flags)
+
+actuators = (all_leg_lengths-22)*0.5 + 2.5
+
+# Create CSV file with trajectory data
+trajectory_df = pd.DataFrame(actuators, columns=[f'Leg_{i+1}' for i in range(6)])
+trajectory_df.to_csv('.\\Data\\boat_trajectory.csv', index=False)
+
 
 
 # Create animation (this will display in notebooks or can be saved)
-ani = sp.animate_trajectory(trajectory, interval=300)
+# ani = sp.animate_trajectory(trajectory, interval=100)
 
 # To display in a notebook:
 # from IPython.display import HTML
 # HTML(ani.to_jshtml())
 
-# To save as GIF (requires pillow)
-ani.save('.\\stewart_trajectory.gif', writer='pillow', fps=10)
+# # To save as GIF (requires pillow)
+# ani.save('.\\stewart_trajectory.gif', writer='pillow', fps=10)
