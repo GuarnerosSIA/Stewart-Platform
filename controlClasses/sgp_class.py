@@ -226,7 +226,7 @@ trajectory = [
 # Obtain the cvs file
 df = pd.read_csv('.\\data\\dusthon_boat.csv')
 trajectory = [
-    {'position': [0, 0, row['Y']+20], 'orientation': [row['Roll'],0,  row['Pitch']]}
+    {'position': [0, 0, row['Y']*2+20], 'orientation': [row['Pitch'], row['Roll'],0]}
     for _, row in df.iterrows()
 ]
 
@@ -235,20 +235,33 @@ all_leg_lengths, valid_flags = sp.follow_trajectory(trajectory)
 print("All leg lengths:\n", all_leg_lengths)
 print("Valid positions:", valid_flags)
 
-actuators = (all_leg_lengths-22)*0.5 + 2.5
+actuators = (all_leg_lengths-21.7)*0.65 + 2.5
+actuators_interpolated = np.zeros((1000, 6))
 
+x = np.linspace(0, 10, df.shape[0])
+xvals = np.linspace(0, 10, 1000)
+
+actuators_interpolated[:,0] = np.interp(xvals, x, actuators[:, 0])
+actuators_interpolated[:,1] = np.interp(xvals, x, actuators[:, 1])
+actuators_interpolated[:,2] = np.interp(xvals, x, actuators[:, 2])
+actuators_interpolated[:,3] = np.interp(xvals, x, actuators[:, 3])
+actuators_interpolated[:,4] = np.interp(xvals, x, actuators[:, 4])
+actuators_interpolated[:,5] = np.interp(xvals, x, actuators[:, 5])
+
+
+print(actuators_interpolated.max(), actuators_interpolated.min())
 # Create CSV file with trajectory data
-trajectory_df = pd.DataFrame(actuators, columns=[f'Leg_{i+1}' for i in range(6)])
+trajectory_df = pd.DataFrame(actuators_interpolated, columns=[f'Leg_{i+1}' for i in range(6)])
 trajectory_df.to_csv('.\\Data\\boat_trajectory.csv', index=False)
 
 
 
 # Create animation (this will display in notebooks or can be saved)
-# ani = sp.animate_trajectory(trajectory, interval=100)
+ani = sp.animate_trajectory(trajectory, interval=100)
 
 # To display in a notebook:
 # from IPython.display import HTML
 # HTML(ani.to_jshtml())
 
 # # To save as GIF (requires pillow)
-# ani.save('.\\stewart_trajectory.gif', writer='pillow', fps=10)
+ani.save('.\\stewart_trajectory.gif', writer='pillow', fps=10)

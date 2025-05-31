@@ -85,14 +85,14 @@ for i in range(rlIterations):
             # Calculate the proportional and derivative control for the PD
        
             #Control LQR + PD
-            # pdc,oc,delta = controlLQR.ocwPD(error[idx,:],dotError[idx,:],kp,kd)
-            # control = vControlBound((pdc+oc)[:,0])
-            # controlKillMe[idx] = (pdc+oc)[:,0]
+            pdc,oc,delta = controlLQR.ocwPD(error[idx,:],dotError[idx,:],kp,kd)
+            control = vControlBound((pdc+oc)[:,0])
+            controlKillMe[idx] = (pdc+oc)[:,0]
         
             #Control LQQR + DNN
-            optimalControl, delta = controlDNN.control(error[idx,:],dotError[idx,:])
-            control = vControlBound((optimalControl)[:,0])
-            controlKillMe[idx] = (optimalControl)[:,0]
+            # optimalControl, delta = controlDNN.control(error[idx,:],dotError[idx,:])
+            # control = vControlBound((optimalControl)[:,0])
+            # controlKillMe[idx] = (optimalControl)[:,0]
 
             valueLQR[idx,0] = valueFunctionLQR(delta,control)
 
@@ -102,7 +102,7 @@ for i in range(rlIterations):
             # Condicion de delta
             
             watcher = np.linalg.norm(delta)
-            if watcher>7:
+            if watcher>9:
                 print(watcher)
                 print("Ahhhhhh")
                 break
@@ -140,7 +140,7 @@ for i in range(rlIterations):
     time.sleep(10)
 
 # df.to_csv(FILECSVPD)
-# df.to_csv(FILECSVLQR)
+df.to_csv(FILECSVLQR)
 
 ser.close()
 # Show 
@@ -151,8 +151,8 @@ fig,ax = plt.subplots(2,2)
 fig.set_figheight(5)
 fig.set_figwidth(5)
 
-ax[0,0].plot(tiempo, measures[:,1], label = 'System 1')
-ax[0,0].plot(tiempo, positions[:,1], label = 'Reference 1')
+ax[0,0].plot(tiempo, measures[:,2], label = 'System 1')
+ax[0,0].plot(tiempo, positions[:,2], label = 'Reference 1')
 ax[0,0].legend()
 
 
@@ -170,7 +170,6 @@ ax[1,1].plot(tiempo,np.cumsum(valueLQR[:,0]), label = 'Value Function LQR')
 # ax[1,1].plot(tiempo,controlD[:,0], label = 'Derivative')
 # ax[1,1].legend()
 
-
+print(np.cumsum(valueLQR[:,0])[-1])
 plt.show() 
-
 # Close the serial connection

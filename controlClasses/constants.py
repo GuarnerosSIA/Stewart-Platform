@@ -5,7 +5,7 @@ import pandas as pd
 
 frecuencia = 0.05
 dt = 0.01
-expected_time = 9.9
+expected_time = 10
 time_steps = int(expected_time/dt)
 tiempo = np.linspace(0,expected_time,time_steps, endpoint= False)
 
@@ -24,6 +24,10 @@ positions[:,5] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
 # from file
 positions[:,0] = trajectory_df['Leg_1'].values[:time_steps]
 positions[:,1] = trajectory_df['Leg_2'].values[:time_steps]
+positions[:,2] = trajectory_df['Leg_3'].values[:time_steps]
+positions[:,3] = trajectory_df['Leg_4'].values[:time_steps]
+positions[:,4] = trajectory_df['Leg_5'].values[:time_steps]
+positions[:,5] = trajectory_df['Leg_6'].values[:time_steps]
 
 
 # Control initialization
@@ -74,7 +78,7 @@ QLQR3[:6,:6] = np.eye(6)*0.01
 QLQR3[6:,6:] = np.eye(6)*0.01
 
 
-RLQR3 = np.eye(6)*0.01
+RLQR3 = np.eye(6)*0.005
 
 
 PLQR3 = np.zeros((12,12))
@@ -98,18 +102,18 @@ nStates = 12
 nInputs = 6
 nNeuronsV = 10
 
-alpha = 0.55
-beta =  0.55
+alpha = 0.6
+beta =  0.6
 
-w0 = np.random.random((nNeuronsV,1))*1
+w0 = np.random.random((nNeuronsV,1))*0.01
 w0 = w0.astype(np.float32)
-c = (np.random.random((nNeuronsV,nStates)).T-0.5)*0.015
+c = (np.random.random((nNeuronsV,nStates)).T-0.5)*0.001
 # print(PLQR)
 # print(PLQR2)
 # Storage
 
-FILECSVPD = 'data\platformPD_prueba.csv'
-FILECSVLQR = 'data\platformLQR_prueba.csv'
+FILECSVPD = 'data\platformPD_boat.csv'
+FILECSVLQR = 'data\platformLQR_boat.csv'
 
 # Reinforcement learning
 actor_State = 'input_1'
