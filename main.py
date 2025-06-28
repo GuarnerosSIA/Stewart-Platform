@@ -151,7 +151,7 @@ def sgp_main(kp,kd):
             
             if  np.any(measures[idx,:] <= 1) or np.any(measures[idx,:] >= 9):
                 print("Out of range")
-                truncated = True
+                return -1
 
 
     # Obtain the time employed to run the algorithm
@@ -166,6 +166,7 @@ def sgp_main(kp,kd):
     # Create a .csv file that containsthe information computed
     df = pd.DataFrame(dataAquired)
     figure_creation(measures, positions, error, dotError, control_sgp, valueLQR, motor1)
+    print(kp, kd)
     return valueLQR[-1,0]
     
 # df.to_csv(FILECSVPD)
@@ -187,8 +188,8 @@ class EnvStewart(gym.Env):
     def step(self, action):
         # Send control value and received actuators position
         kp_delta, kd_delta = action[:6], action[6:]
-        self.kp = np.clip(self.kp + kp_delta, 0, 200)
-        self.kd = np.clip(self.kd + kd_delta, 0, 50)
+        self.kp = np.reshape(np.clip(self.kp + kp_delta*5, -200, 0), (1, 6))
+        self.kd = np.reshape(np.clip(self.kd + kd_delta*5, -50, 0), (1, 6))
         self.cost_function = sgp_main(kp = self.kp, kd = self.kd)
         obs = self._get_obs()
         reward = float(self._compute_reward())
@@ -199,11 +200,11 @@ class EnvStewart(gym.Env):
     def reset(self, seed=0):
         time.sleep(1)  # Wait for the system to stabilize
         self.kp = np.array(
-            [-90,-90,-90,-90,-90,-90]
+            [[-90,-90,-90,-90,-90,-90]]
             )
 
         self.kd = np.array(
-            [-10,-10,-10,-10,-10,-10]
+            [[-10,-10,-10,-10,-10,-10]]
             )
         return self._get_obs(), {"A":0}
     def _get_obs(self):
@@ -211,19 +212,21 @@ class EnvStewart(gym.Env):
     def _compute_reward(self):
         return np.array([4000/self.cost_function],dtype=np.float32)
     def _is_done(self,obs):
-        if (np.linalg.norm(obs) + self.cost_function) < 1000:
+        if (np.linalg.norm(obs) + self.cost_function) < -10:
             return True
         return False
     def _is_truncated(self,obs):
         if (np.linalg.norm(obs) + self.cost_function) > 5000:
+            return True
+        elif self.cost_function == -1:
             return True
         return False
     def render(self):
         pass
 
 
-# env = EnvStewart()
-# check_env(env)
+env = EnvStewart()
+check_env(env)
 
 
 
