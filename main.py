@@ -8,6 +8,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import datetime
 from controlClasses.algorithms import DSTA, LQR, ValueDNN
 from controlClasses.constants import*
 from controlClasses.functions import*
@@ -172,7 +173,7 @@ def sgp_main(kp,kd):
 # df.to_csv(FILECSVPD)
 # df.to_csv(FILECSVLQR)
 
-sgp_main(kp = kp, kd = kd)
+# sgp_main(kp = kp, kd = kd)
 
 
 # RL
@@ -226,10 +227,39 @@ class EnvStewart(gym.Env):
 
 
 env = EnvStewart()
-check_env(env)
+# check_env(env)
 
 
+log_dir = "./PDGains/"+datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
+action_noise = NormalActionNoise(mean=np.zeros(12), sigma=0.5 * np.ones(12))
 
+try:
+    model = TD3.load("td3_stewart_pd.zip",env=env, verbose=1,
+            learning_rate=0.0005,batch_size=4, gamma=0.97,
+            action_noise=action_noise)
+    print("Model loaded")
+except:
+    print("Unable to load TD3, creating new model")
+    model = TD3("MlpPolicy", env, verbose=1,learning_rate=0.0005,
+            batch_size=4, gamma=0.99,
+            action_noise=action_noise)
+
+dtime = time.time()
+model.learn(total_timesteps=10)
+
+obs,info = env.reset(0)
+for i in range(10):
+    action, _states = model.predict(obs, deterministic=True)
+    obs, reward, done, truncated, info = env.step(action)
+    if done:
+        obs,info = env.reset(0)
+
+env.close()
+model.save("TD3CartCoppelia")
+print((dtime-time.time())/60)
+
+
+# Serial connection close
 ser.close()
 
 # Show 
