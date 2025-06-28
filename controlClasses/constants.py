@@ -32,7 +32,7 @@ positions[:,5] = trajectory_df['Leg_6'].values[:time_steps]
 
 # Control initialization
 
-control = np.zeros((1,6))+255
+
 
 ## PD control
 kp = np.array([
