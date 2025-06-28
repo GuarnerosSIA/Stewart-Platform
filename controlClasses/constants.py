@@ -14,12 +14,12 @@ tiempo = np.linspace(0,expected_time,time_steps, endpoint= False)
 trajectory_df = pd.read_csv('data\\boat_trajectory.csv')
 
 positions = np.zeros((time_steps,6))
-positions[:,0] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
-positions[:,1] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
-positions[:,2] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
-positions[:,3] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
-positions[:,4] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
-positions[:,5] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
+# positions[:,0] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
+# positions[:,1] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
+# positions[:,2] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
+# positions[:,3] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
+# positions[:,4] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
+# positions[:,5] = 2.5*np.sin(2*np.pi*tiempo*frecuencia)+5
 
 # from file
 positions[:,0] = trajectory_df['Leg_1'].values[:time_steps]
