@@ -64,11 +64,11 @@ np.random.seed(1)
 w0 = np.random.random((nNeuronsV,1))*1
 w0 = w0.astype(np.float32)
 kp = np.array(
-            [-100,-100,-100,-100,-100,-100]
+            [[-50,-50,-50,-50,-50,-50]]
             )
 
 kd = np.array(
-            [-10,-10,-10,-10,-10,-10]
+            [[-5,-5,-5,-5,-5,-5]]
             )
 
 
@@ -85,6 +85,7 @@ def sgp_main(kp,kd):
     motor6 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
 
     # Create arrays to store the information computed and obtained
+    truncated = False
 
     measures = np.zeros((time_steps,6))
     dotMeasures = np.zeros((time_steps,6))
@@ -147,11 +148,10 @@ def sgp_main(kp,kd):
             plin[:,idx] = P.flatten()
             # Condicion de delta
 
-            watcher = np.linalg.norm(delta)
-            if watcher>100:
-                print(watcher)
-                print("Ahhhhhh")
-                break
+            
+            if  np.any(measures[idx,:] <= 1) or np.any(measures[idx,:] >= 9):
+                print("Out of range")
+                truncated = True
 
 
     # Obtain the time employed to run the algorithm
@@ -187,8 +187,8 @@ class EnvStewart(gym.Env):
     def step(self, action):
         # Send control value and received actuators position
         kp_delta, kd_delta = action[:6], action[6:]
-        self.kp = np.clip(self.kp + kp_delta, -200, 200)
-        self.kd = np.clip(self.kd + kd_delta, -50, 50)
+        self.kp = np.clip(self.kp + kp_delta, 0, 200)
+        self.kd = np.clip(self.kd + kd_delta, 0, 50)
         self.cost_function = sgp_main(kp = self.kp, kd = self.kd)
         obs = self._get_obs()
         reward = float(self._compute_reward())
