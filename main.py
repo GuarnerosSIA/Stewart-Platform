@@ -166,7 +166,7 @@ def sgp_main(kp,kd):
 
     # Create a .csv file that containsthe information computed
     df = pd.DataFrame(dataAquired)
-    figure_creation(measures, positions, error, dotError, control_sgp, valueLQR, motor1)
+    # figure_creation(measures, positions, error, dotError, control_sgp, valueLQR, motor1)
     print(kp, kd)
     return valueLQR[-1,0]
     
