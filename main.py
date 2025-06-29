@@ -2,7 +2,6 @@
 # self made classes
 
 import logging
-import onnxruntime as ort
 import serial
 import time
 import numpy as np
@@ -59,7 +58,7 @@ time.sleep(3)
 vControlBound = np.vectorize(control_bounds)
 
 rlIterations = 1
-actorNN,criticNN = loadRLNN()
+
 
 np.random.seed(1)
 w0 = np.random.random((nNeuronsV,1))*1
@@ -236,13 +235,13 @@ action_noise = NormalActionNoise(mean=np.zeros(12), sigma=0.5 * np.ones(12))
 try:
     model = TD3.load("td3_stewart_pd.zip",env=env, verbose=1,
             learning_rate=0.0005,batch_size=4, gamma=0.97,
-            action_noise=action_noise)
+            tensorboard_log=log_dir,action_noise=action_noise)
     print("Model loaded")
 except:
     print("Unable to load TD3, creating new model")
     model = TD3("MlpPolicy", env, verbose=1,learning_rate=0.0005,
             batch_size=4, gamma=0.99,
-            action_noise=action_noise)
+            tensorboard_log=log_dir,action_noise=action_noise)
 
 dtime = time.time()
 model.learn(total_timesteps=10)
