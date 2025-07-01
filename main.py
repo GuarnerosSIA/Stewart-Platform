@@ -207,6 +207,7 @@ class EnvStewart(gym.Env):
         self.kd = np.array(
             [[-50,-50,-50,-50,-50,-50]]
             )
+        self.cont = 0
         return self._get_obs(), {"A":0}
     def _get_obs(self):
         return np.array([self.kp,self.kd], dtype=np.float32).flatten()
@@ -218,19 +219,18 @@ class EnvStewart(gym.Env):
         else:
             return np.array([4000/self.cost_function],dtype=np.float32)
     def _is_done(self,obs):
-        if (np.linalg.norm(obs) + self.cost_function) < -10:
-            return True
-        elif self.cont > 10:
-            self.cont = 0
-            print("Resetting environment")
+        if self.cont > 10:
+            print("Environment finished")
             return True
         return False
     def _is_truncated(self,obs):
         if (np.linalg.norm(obs) + self.cost_function) > 4000:
+            print("High cost function")
             return True
         elif self.cost_function == -1:
             print("Out of range")
             self.reset(0)
+            print("Resetting SGP")
             _ = sgp_main(self.kp, self.kd)
             return True
         return False
