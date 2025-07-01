@@ -165,7 +165,7 @@ def sgp_main(kp,kd):
     # Create a .csv file that containsthe information computed
     # df = pd.DataFrame(dataAquired)
     # figure_creation(measures, positions, error, dotError, control_sgp, valueLQR, motor1)
-    print(kp, kd)
+    # print(kp, kd)
     return valueLQR[-1,0]
     
 # df.to_csv(FILECSVPD)
@@ -195,11 +195,6 @@ class EnvStewart(gym.Env):
         done = self._is_done(obs)
         reward = float(self._compute_reward())
         truncated = self._is_truncated(obs)
-
-        if truncated:
-            self.reset(0)
-            _ = sgp_main(self.kp, self.kd)
-
         self.cont += 1
         return obs, reward, done,truncated, {}
 
@@ -226,12 +221,17 @@ class EnvStewart(gym.Env):
         if (np.linalg.norm(obs) + self.cost_function) < -10:
             return True
         elif self.cont > 10:
+            self.cont = 0
+            print("Resetting environment")
             return True
         return False
     def _is_truncated(self,obs):
         if (np.linalg.norm(obs) + self.cost_function) > 4000:
             return True
         elif self.cost_function == -1:
+            print("Out of range")
+            self.reset(0)
+            _ = sgp_main(self.kp, self.kd)
             return True
         return False
     def render(self):
