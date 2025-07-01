@@ -15,6 +15,7 @@ import gymnasium as gym
 from stable_baselines3 import TD3
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.noise import NormalActionNoise
+from stable_baselines3.common.callbacks import ProgressBarCallback
 
 
 def figure_creation(measures, positions, error, dotError, control_sgp, valueLQR, motor1):
@@ -224,7 +225,7 @@ class EnvStewart(gym.Env):
             return True
         return False
     def _is_truncated(self,obs):
-        if (np.linalg.norm(obs) + self.cost_function) > 4000:
+        if (np.linalg.norm(obs) + self.cost_function) > 4500:
             print("High cost function")
             return True
         elif self.cost_function == -1:
@@ -247,18 +248,18 @@ action_noise = NormalActionNoise(mean=np.zeros(12), sigma=0.5 * np.ones(12))
 
 try:
     model = TD3.load("td3_stewart_pd.zip",env=env, verbose=1,
-            learning_rate=0.01, batch_size=10, 
+            learning_rate=0.01, batch_size=16, 
             tensorboard_log=log_dir, gamma=0.9,
-            action_noise=action_noise, learning_starts=5)
+            action_noise=action_noise, learning_starts=8)
     print("Model loaded")
 except:
     print("Unable to load TD3, creating new model")
     model = TD3("MlpPolicy", env, verbose=1,learning_rate=0.01,
-            batch_size=10, tensorboard_log=log_dir, gamma=0.9,
-            action_noise=action_noise, learning_starts=5)
+            batch_size=16, tensorboard_log=log_dir, gamma=0.9,
+            action_noise=action_noise, learning_starts=8)
 
 dtime = time.time()
-model.learn(total_timesteps=100,log_interval=10)
+model.learn(total_timesteps=1000,log_interval=10,progress_bar=True)
 
 obs,info = env.reset(0)
 for i in range(10):
