@@ -85,7 +85,6 @@ def sgp_main(kp,kd):
     motor6 = DSTA(dt,6,5,0.999, 0.999,w1=0,w2=0)
 
     # Create arrays to store the information computed and obtained
-    truncated = False
 
     measures = np.zeros((time_steps,6))
     dotMeasures = np.zeros((time_steps,6))
@@ -161,10 +160,10 @@ def sgp_main(kp,kd):
     
     # Create a dictionary for storing the information
     motors = [motor1, motor2, motor3, motor4, motor5, motor6]
-    dataAquired = saveData(measures,positions,control_sgp,motors,valueLQR)
+    # dataAquired = saveData(measures,positions,control_sgp,motors,valueLQR)
 
     # Create a .csv file that containsthe information computed
-    df = pd.DataFrame(dataAquired)
+    # df = pd.DataFrame(dataAquired)
     # figure_creation(measures, positions, error, dotError, control_sgp, valueLQR, motor1)
     print(kp, kd)
     return valueLQR[-1,0]
@@ -182,41 +181,55 @@ class EnvStewart(gym.Env):
         self.action_space = gym.spaces.Box(low=-1, high=1, shape=(12,), dtype=np.float32)
         self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(12,), dtype=np.float32)
         self.cost_function = 1
+        self.cont = 0
         self.reset()
     
 
     def step(self, action):
         # Send control value and received actuators position
         kp_delta, kd_delta = action[:6], action[6:]
-        self.kp = np.reshape(np.clip(self.kp + kp_delta*5, -200, 0), (1, 6))
-        self.kd = np.reshape(np.clip(self.kd + kd_delta*5, -50, 0), (1, 6))
+        self.kp = np.reshape(np.clip(self.kp + kp_delta*50, -200, 0), (1, 6))
+        self.kd = np.reshape(np.clip(self.kd + kd_delta*50, -200, 0), (1, 6))
         self.cost_function = sgp_main(kp = self.kp, kd = self.kd)
         obs = self._get_obs()
-        reward = float(self._compute_reward())
         done = self._is_done(obs)
+        reward = float(self._compute_reward())
         truncated = self._is_truncated(obs)
+
+        if truncated:
+            self.reset(0)
+            _ = sgp_main(self.kp, self.kd)
+
+        self.cont += 1
         return obs, reward, done,truncated, {}
 
     def reset(self, seed=0):
         time.sleep(1)  # Wait for the system to stabilize
         self.kp = np.array(
-            [[-90,-90,-90,-90,-90,-90]]
+            [[-50,-50,-50,-50,-50,-50]]
             )
 
         self.kd = np.array(
-            [[-10,-10,-10,-10,-10,-10]]
+            [[-50,-50,-50,-50,-50,-50]]
             )
         return self._get_obs(), {"A":0}
     def _get_obs(self):
         return np.array([self.kp,self.kd], dtype=np.float32).flatten()
     def _compute_reward(self):
-        return np.array([4000/self.cost_function],dtype=np.float32)
+        if self.cost_function > 3500:
+            return np.array([1000/self.cost_function],dtype=np.float32)
+        elif self.cost_function > 3000:
+            return np.array([2000/self.cost_function],dtype=np.float32)
+        else:
+            return np.array([4000/self.cost_function],dtype=np.float32)
     def _is_done(self,obs):
         if (np.linalg.norm(obs) + self.cost_function) < -10:
             return True
+        elif self.cont > 10:
+            return True
         return False
     def _is_truncated(self,obs):
-        if (np.linalg.norm(obs) + self.cost_function) > 5000:
+        if (np.linalg.norm(obs) + self.cost_function) > 4000:
             return True
         elif self.cost_function == -1:
             return True
@@ -234,17 +247,18 @@ action_noise = NormalActionNoise(mean=np.zeros(12), sigma=0.5 * np.ones(12))
 
 try:
     model = TD3.load("td3_stewart_pd.zip",env=env, verbose=1,
-            learning_rate=0.0005,batch_size=4, gamma=0.97,
-            tensorboard_log=log_dir,action_noise=action_noise)
+            learning_rate=0.01, batch_size=10, 
+            tensorboard_log=log_dir, gamma=0.9,
+            action_noise=action_noise, learning_starts=5)
     print("Model loaded")
 except:
     print("Unable to load TD3, creating new model")
-    model = TD3("MlpPolicy", env, verbose=1,learning_rate=0.0005,
-            batch_size=4, gamma=0.99,
-            tensorboard_log=log_dir,action_noise=action_noise)
+    model = TD3("MlpPolicy", env, verbose=1,learning_rate=0.01,
+            batch_size=10, tensorboard_log=log_dir, gamma=0.9,
+            action_noise=action_noise, learning_starts=5)
 
 dtime = time.time()
-model.learn(total_timesteps=10)
+model.learn(total_timesteps=100,log_interval=10)
 
 obs,info = env.reset(0)
 for i in range(10):
