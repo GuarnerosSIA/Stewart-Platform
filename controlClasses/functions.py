@@ -39,10 +39,15 @@ def DoPri45Step(f,t,x,h):
 
 
 def sendReceive(integers2Send, serialObject):
-    data_to_send = ','.join(map(str, integers2Send)) + '\n'
-    serialObject.write(data_to_send.encode('utf-8'))
-    data_received = serialObject.readline()
-    return data_received.decode('utf-8')
+    try:
+        data_to_send = ','.join(map(str, integers2Send)) + '\n'
+        serialObject.write(data_to_send.encode('utf-8'))
+        data_received = serialObject.readline()
+        out = data_received.decode('utf-8')
+    except:
+        print("Error in sendReceive function")
+        out = ':('
+    return out
 
 def saveData(measures, positions, control, motors, functional):
     motor1 = motors[0]

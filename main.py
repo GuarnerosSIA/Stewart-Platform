@@ -150,6 +150,22 @@ def sgp_main(kp,kd):
 
             
             if  np.any(measures[idx,:] <= 1) or np.any(measures[idx,:] >= 9):
+                # Creo un arreglo para el control de emergencia
+                emergency_control = [0,0,0,0,0,0]
+                # Si la medida es muy baja, mando a ese actuador control para que se mueva
+                # en sentido contrario
+                if np.any(measures[idx,:] <= 1):
+                    for i in range(6):
+                        if measures[idx,i] <= 1:
+                            emergency_control[i] = 0
+                # Si la medida es muy alta, mando a ese actuador control para que se mueva
+                # en sentido contrario
+                if np.any(measures[idx,:] >= 9):
+                    for i in range(6):
+                        if measures[idx,i] >= 9:
+                            emergency_control[i] = 500
+                for i in range(50):
+                    sendReceive([0,0,0,0,0,0],ser)
                 print("Out of range")
                 return -1
 
@@ -191,6 +207,7 @@ class EnvStewart(gym.Env):
         kp_delta, kd_delta = action[:6], action[6:]
         self.kp = np.reshape(np.clip(self.kp + kp_delta*50, -200, 0), (1, 6))
         self.kd = np.reshape(np.clip(self.kd + kd_delta*50, -200, 0), (1, 6))
+        print("kp:", self.kp, "\n kd:", self.kd)
         self.cost_function = sgp_main(kp = self.kp, kd = self.kd)
         obs = self._get_obs()
         done = self._is_done(obs)
@@ -243,7 +260,7 @@ env = EnvStewart()
 # check_env(env)
 
 
-log_dir = "./PDGains/"+datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
+log_dir = "./PDGains/X"
 action_noise = NormalActionNoise(mean=np.zeros(12), sigma=0.5 * np.ones(12))
 
 try:
