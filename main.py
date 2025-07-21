@@ -151,21 +151,23 @@ def sgp_main(kp,kd):
             
             if  np.any(measures[idx,:] <= 1) or np.any(measures[idx,:] >= 9):
                 # Creo un arreglo para el control de emergencia
-                emergency_control = [0,0,0,0,0,0]
+                emergency_control = [255,255,255,255,255,255]
                 # Si la medida es muy baja, mando a ese actuador control para que se mueva
                 # en sentido contrario
                 if np.any(measures[idx,:] <= 1):
                     for i in range(6):
                         if measures[idx,i] <= 1:
+                            print(i, "Low measure")
                             emergency_control[i] = 0
                 # Si la medida es muy alta, mando a ese actuador control para que se mueva
                 # en sentido contrario
-                if np.any(measures[idx,:] >= 9):
+                if np.any(measures[idx,:] >= 10):
                     for i in range(6):
-                        if measures[idx,i] >= 9:
+                        if measures[idx,i] >= 10:
+                            print(i, "High measure")
                             emergency_control[i] = 500
-                for i in range(50):
-                    sendReceive([0,0,0,0,0,0],ser)
+                for i in range(40):
+                    sendReceive(emergency_control,ser)
                 print("Out of range")
                 return -1
 
@@ -249,7 +251,6 @@ class EnvStewart(gym.Env):
             print("Out of range")
             self.reset(0)
             print("Resetting SGP")
-            _ = sgp_main(self.kp, self.kd)
             return True
         return False
     def render(self):
@@ -260,23 +261,23 @@ env = EnvStewart()
 # check_env(env)
 
 
-log_dir = "./PDGains/X"
+log_dir = "./PDGains/Bueno"
 action_noise = NormalActionNoise(mean=np.zeros(12), sigma=0.5 * np.ones(12))
 
 try:
     model = TD3.load("td3_stewart_pd.zip",env=env, verbose=1,
-            learning_rate=0.01, batch_size=16, 
+            learning_rate=0.005, batch_size=16, 
             tensorboard_log=log_dir, gamma=0.9,
             action_noise=action_noise, learning_starts=8)
     print("Model loaded")
 except:
     print("Unable to load TD3, creating new model")
-    model = TD3("MlpPolicy", env, verbose=1,learning_rate=0.01,
+    model = TD3("MlpPolicy", env, verbose=1,learning_rate=0.005,
             batch_size=16, tensorboard_log=log_dir, gamma=0.9,
             action_noise=action_noise, learning_starts=8)
 
 dtime = time.time()
-model.learn(total_timesteps=1000,log_interval=10,progress_bar=True)
+model.learn(total_timesteps=500,log_interval=10,progress_bar=True)
 
 obs,info = env.reset(0)
 for i in range(10):
@@ -286,7 +287,7 @@ for i in range(10):
         obs,info = env.reset(0)
 
 env.close()
-model.save("TD3CartCoppelia")
+model.save("td3_stewart_pd.zip")
 print((dtime-time.time())/60)
 
 
